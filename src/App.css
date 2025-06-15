@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration { display: none; }
+
+
+/* Style for Swiper navigation buttons */
+.swiper-button-next,
+.swiper-button-prev {
+  color: black !important; /* Set default button color to black */
+}
+
+/* Optional: Adjust button hover state */
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  color: #333 !important;
+}
+
+/* Style for Swiper pagination dots */
+.swiper-pagination-bullet {
+  background-color: black !important;
+  opacity: 0.7 !important;
+}
+
+/* Style for active dot */
+.swiper-pagination-bullet-active {
+  background-color: #000 !important;
+  transform: scale(1.2) !important;
+}
+
+.btn-color{
+  color: white !important;
+  font-size: 4rem !important;
+}
+.btn-color:hover{
+  color: white !important;
+}
+
+.noto-sans {
+  font-family: "Noto Sans", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
+
