@@ -2,15 +2,14 @@ import { toast } from "react-hot-toast";
 import { removePurchasedPosters } from "../../slices/cartSlice";
 import { setPaymentLoading } from "../../slices/posterSlice";
 import { apiConnector } from "../apiConnector";
-import { paymentEndpoints } from "../apis";
+import { paymentEndpointsV2 } from "../apis";
 
 const {
   POSTER_PAYMENT_API,
   POSTER_VERIFY_API,
-  SEND_PAYMENT_SUCCESS_EMAIL_API,
-} = paymentEndpoints;
+} = paymentEndpointsV2;
 
-// Load the Razorpay SDK
+// Load Razorpay SDK
 async function loadScript(src) {
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
@@ -24,24 +23,18 @@ async function loadScript(src) {
   });
 }
 
-// Buy the Poster
-export async function BuyPoster(token, posterDetails, userDetails, deliveryId, navigate, dispatch) {
+// ✅ Buy Poster and Trigger Razorpay Payment
+export async function BuyPoster(token, amount, posterDetails, userDetails, shippingAddress, navigate, dispatch) {
   try {
-    // Step 1: Load Razorpay SDK
     const isScriptLoaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
     if (!isScriptLoaded) {
-      throw new Error("Razorpay SDK loading failed. Check your internet connection.");
+      throw new Error("Razorpay SDK loading failed.");
     }
-    const payload = {
-      posterDetails,
-      deliveryId, // Pass delivery address to backend
-      
-    };
 
     const orderResponse = await apiConnector(
       "POST",
       POSTER_PAYMENT_API,
-      payload,
+      { amount },
       { Authorization: `Bearer ${token}` }
     );
 
@@ -49,14 +42,12 @@ export async function BuyPoster(token, posterDetails, userDetails, deliveryId, n
       throw new Error(orderResponse?.data?.message || "Payment initiation failed.");
     }
 
-    // Extract order details
-    const { amount, currency, id: orderId } = orderResponse.data.data;
+    const { amount: orderAmount, currency, id: orderId } = orderResponse.data.data;
 
-    // Step 3: Configure Razorpay options
     const options = {
       key: process.env.REACT_APP_RAZORPAY_KEY,
       currency,
-      amount: `${amount}`,
+      amount: `${orderAmount}`,
       order_id: orderId,
       name: "PosterWeb",
       description: "Thank you for purchasing the poster.",
@@ -65,58 +56,51 @@ export async function BuyPoster(token, posterDetails, userDetails, deliveryId, n
         email: userDetails.email,
       },
       handler: async (response) => {
-        try {
-          // Show loading toast before starting verification
-          const verifyToastId = toast.loading("Processing payment...");
-
-          // Verify the payment
-          await verifyPayment(
-            { ...response, posterDetails, deliveryId },
-            token,
-            navigate,
-            dispatch
-          );
-
-          // Dismiss the loading toast
-          toast.dismiss(verifyToastId);
-        } catch (error) {
-          console.error("Handler Error:", error);
-          toast.error("An error occurred while processing payment.");
-        }
+        const toastId = toast.loading("Processing payment...");
+        await verifyPayment(response, amount, token, navigate, dispatch, posterDetails, shippingAddress, "Online");
+        toast.dismiss(toastId);
       },
       theme: {
         color: "#3399cc",
       },
     };
 
-    // Step 4: Open Razorpay payment window
     const paymentObject = new window.Razorpay(options);
     paymentObject.open();
 
-    // Handle payment failure
     paymentObject.on("payment.failed", (response) => {
-      console.error("Payment Failed Details:", response.error);
+      console.error("Payment Failed:", response.error);
       toast.error("Payment failed. Please try again.");
     });
+
   } catch (error) {
-    console.error("Payment Initialization Error:", error);
+    console.error("BuyPoster Error:", error);
     toast.error(error.message || "Could not complete payment.");
   }
 }
 
-// Verify the Payment
-async function verifyPayment(paymentData, token, navigate, dispatch) {
-  // const toastId = toast.loading("Verifying payment...");
+// ✅ Verify Payment and Place Order
+export async function verifyPayment(paymentData, amount, token, navigate, dispatch, posterDetails, shippingAddress, paymetMethod) {
   dispatch(setPaymentLoading(true));
-  
+
   try {
+    const orderItems = posterDetails.map((item) => ({
+      posterId: item.posterId,
+      quantity: item.quantity,
+      size: item.size,
+    }));
 
     const response = await apiConnector(
       "POST",
       POSTER_VERIFY_API,
       {
-        ...paymentData,
-        orderId: paymentData.razorpay_order_id,
+        razorpay_order_id: paymentData.razorpay_order_id,
+        razorpay_payment_id: paymentData.razorpay_payment_id,
+        razorpay_signature: paymentData.razorpay_signature,
+        amount,
+        orderItems,
+        shippingAddress: shippingAddress._id,
+        paymetMethod,
       },
       { Authorization: `Bearer ${token}` }
     );
@@ -125,36 +109,17 @@ async function verifyPayment(paymentData, token, navigate, dispatch) {
       throw new Error(response?.data?.message || "Payment verification failed.");
     }
 
-    toast.success("Payment Successful! Posters are added to your account.");
+    toast.success("Payment Successful! Order placed.");
 
-    const purchasedPosterIds = paymentData.posterDetails.map((poster) => poster.posterId);
+    const purchasedPosterIds = posterDetails.map((poster) => poster.posterId);
     dispatch(removePurchasedPosters(purchasedPosterIds));
 
-    navigate("/"); // Navigate to home or relevant page
+    navigate("/order-history");
+
   } catch (error) {
-    console.error("Payment Verification Error:", error);
-    toast.error(error.message || "Could not verify payment.");
+    console.error("Verification Error:", error);
+    toast.error(error.message || "Payment verification failed.");
   } finally {
-    // toast.dismiss(toastId);
     dispatch(setPaymentLoading(false));
-  }
-}
-
-
-// Send Payment Success Email
-async function sendPaymentSuccessEmail(paymentResponse, amount, token) {
-  try {
-    const emailResponse = await apiConnector(
-      "POST",
-      SEND_PAYMENT_SUCCESS_EMAIL_API,
-      {
-        orderId: paymentResponse.razorpay_order_id,
-        paymentId: paymentResponse.razorpay_payment_id,
-        amount,
-      },
-      { Authorization: `Bearer ${token}` }
-    );
-  } catch (error) {
-    console.error("Payment Success Email Error:", error);
   }
 }

@@ -8,7 +8,7 @@ const CheckOutItem = ({ item,quantity }) => {
     return (
         <div className="grid grid-cols-3 cursor-pointer h-[max-content] w-full border-b-2 border-black/10  m-2 p-2 cart-item">
 
-            <img loading="lazy" onClick={handleClick} src={item.image} alt="item img" className="w-[50%] mx-1 mr-5 p-2" />
+            <img onClick={handleClick} src={item?.posterImage?.image} alt="item img" className="w-[50%] mx-1 mr-5 p-2" />
 
 
             <div className="flex flex-col col-span-2 gap-4">

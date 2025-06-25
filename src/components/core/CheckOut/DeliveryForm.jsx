@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addDelivery } from "../../../services/operations/deliveryAPI";
+import { addAddress } from "../../../services/operations/deliveryAPI";
 
 const DeliveryForm = ({setShowDeliveryForm}) => {
   const dispatch = useDispatch();
@@ -32,7 +32,7 @@ const DeliveryForm = ({setShowDeliveryForm}) => {
     }
 
     try {
-      dispatch(addDelivery(address, city, state, pincode, phoneNumber,false, token));
+      dispatch(addAddress(address, city, state, pincode, phoneNumber,false, token));
         setDeliveryDetails({
           firstName: "",
           lastName: "",

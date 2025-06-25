@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useEffect, useState, useRef } from "react";
+import{ useEffect, useState, useRef } from "react";
 
 export function AdaptiveImageDivForHome({ images }) {
   const [backgroundColor, setBackgroundColor] = useState("rgb(255, 255, 255)");
@@ -55,7 +53,6 @@ export function AdaptiveImageDivForHome({ images }) {
         style={{ backgroundColor, color: textColor }}
       >
         <img
-          loading="lazy"
           src={images}
           alt={`poster-image`}
           className="min-w-[155px] w-auto md:min-w-[190px] lg:w-full h-60 sm:h-[16rem] md:h-[18rem] lg:h-full border-black border-2 lg:border-4 object-fill md:object-fill"

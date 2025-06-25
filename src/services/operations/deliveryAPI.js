@@ -1,58 +1,66 @@
-import {toast} from "react-hot-toast"
-import { setLoading } from "../../slices/authSlice"
-import { setDeliveryAddress } from "../../slices/deliverySlice"
-import { apiConnector } from "../apiConnector"
-import { deliveryEndpoints } from "../apis"
+import { toast } from "react-hot-toast";
+import { setLoading } from "../../slices/authSlice";
+import { apiConnector } from "../apiConnector";
+import { userEndpoints } from "../apis";
+const { GET_ADDRESS_API, ADD_ADDRESS_API } = userEndpoints;
 
-const {
-    GET_DELIVERY_ADDRESS_API,
-    ADD_DELIVERY_API
-} = deliveryEndpoints
-
-export function getDeliveryAddress(token) {
-  return async (dispatch) => {
-    const toastId = toast.loading("Loading...")
-    dispatch(setLoading(true))
-    try {
-      const response = await apiConnector("GET", GET_DELIVERY_ADDRESS_API, null, { Authorization: `Bearer ${token}` })
-
-      if (!response.data.success) {
-        throw new Error(response.data.message)
-      }
-      dispatch(setDeliveryAddress(response.data.deliveryAddresses))
-    } catch (error) {
-      console.log("GET DELIVERY ADDRESS API ERROR............", error)
-      toast.error("Failed to get delivery address")
+export const getAddress = async (token) => {
+  let result = [];
+  try {
+    const response = await apiConnector("GET", GET_ADDRESS_API, null, {
+      Authorization: `Bearer ${token}`,
+    });
+    if (!response?.data?.success) {
+      throw new Error("Could not fetch address");
     }
-    dispatch(setLoading(false))
-    toast.dismiss(toastId)
-  }
-}
 
-export function addDelivery(address, city, state, pincode, phoneNumber, isDefault, token) {
+    result = response.data.data?.address || [];
+  } catch (error) {
+    console.error("GET_ADDRESS_API ERROR:", error);
+    toast.error(error.message || "Something went wrong while fetching address");
+  }
+
+  return result;
+};
+
+
+export function addAddress(
+  addressLine1,
+  city,
+  state,
+  pincode,
+  phoneNumber,
+  isDefault,
+  token
+) {
   return async (dispatch) => {
-    const toastId = toast.loading("Loading...")
-    dispatch(setLoading(true))
+    const toastId = toast.loading("Loading...");
+    dispatch(setLoading(true));
     try {
-      const response = await apiConnector("POST", ADD_DELIVERY_API, {
-        address,
-        city,
-        state,
-        pincode,
-        phoneNumber,
-        isDefault
-      },{Authorization: `Bearer ${token}`})
-      
-      dispatch(getDeliveryAddress(token));
+      const response = await apiConnector(
+        "POST",
+        ADD_ADDRESS_API,
+        {
+          addressLine1,
+          city,
+          state,
+          pincode,
+          phoneNumber,
+          isDefault,
+        },
+        { Authorization: `Bearer ${token}` }
+      );
+
+      dispatch(getAddress(token));
       if (!response.data) {
-        throw new Error(response.data.message)
+        throw new Error(response.data.message);
       }
-      toast.success("Delivery address added")
+      toast.success("Delivery address added");
     } catch (error) {
-      console.log("ADD DELIVERY API ERROR............", error)
-      toast.error("Failed to add delivery address")
+      console.log("ADD DELIVERY API ERROR............", error);
+      toast.error("Failed to add delivery address");
     }
-    dispatch(setLoading(false))
-    toast.dismiss(toastId)
-  }
+    dispatch(setLoading(false));
+    toast.dismiss(toastId);
+  };
 }

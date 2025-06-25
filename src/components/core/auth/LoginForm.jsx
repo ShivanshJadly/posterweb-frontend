@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useDispatch } from "react-redux";
+import { toast } from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import "../../../font/font.css";
 
@@ -27,8 +28,22 @@ function LoginForm() {
 
   const handleOnSubmit = (e) => {
     e.preventDefault();
-    dispatch(login(email, password, navigate));
-  };
+
+    if (!password) {
+        toast.error("Password cannot be empty!");
+        return;
+    }
+
+    dispatch(login(email, password, navigate))
+        .then((response) => {
+            if (response.error) {
+                toast.error("Incorrect email or password!");
+            }
+        })
+        .catch(() => {
+            // toast.error("Something went wrong. Please try again.");
+        });
+};
 
   return (
     <form onSubmit={handleOnSubmit} className="flex w-full flex-col gap-y-8 pl-12"> 
@@ -46,8 +61,8 @@ function LoginForm() {
           className="form-style w-full rounded-sm text-gray-700 p-2 border border-black focus:outline-none"
         />
       </label>
-      <label className="w-[82%]">
-        <p className="relative mb-1 text-[1.1rem] leading-[1.375rem] text-richblack-5">
+      <label className="relative w-[82%]">
+        <p className=" mb-1 text-[1.1rem] leading-[1.375rem] text-richblack-5">
           Password
         </p>
         <input

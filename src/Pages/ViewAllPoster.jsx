@@ -1,96 +1,133 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { getAllPoster } from '../services/operations/posterDetailsAPI';
-import HomeSkeleton from '../components/common/skeleton/HomeSkeleton';
-import Product from '../components/Product';
+import React, { useCallback, useRef, useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { getPoster } from "../services/operations/posterDetailsAPI";
+import HomeSkeleton from "../components/common/skeleton/HomeSkeleton";
+import Product from "../components/Product";
+import { VariableSizeGrid as Grid } from "react-window";
 
 const ViewAllPoster = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [allPosts, setAllPosts] = useState([]);
+  const postsPerPage = 8;
+  const observer = useRef();
+  const gridRef = useRef();
 
-  // 🆕 Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 6;
+  const columnCount = 4;
+  const columnWidth = 350;
+
+  const getRowHeight = useCallback(() => 600, []);
+  const getColumnWidth = useCallback(() => columnWidth, []);
+
+  const lastPostElementRef = useCallback(
+    (node) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
 
   const fetchProductData = async () => {
+    if (!hasMore || loading) return;
     setLoading(true);
     try {
-      const data = await getAllPoster();
-      setPosts(data);
+      if (page === 1) {
+        const data = await getPoster();
+        setAllPosts(data);
+        setPosts(data.slice(0, postsPerPage));
+        setHasMore(data.length > postsPerPage);
+      } else {
+        const startIndex = (page - 1) * postsPerPage;
+        const endIndex = startIndex + postsPerPage;
+        const newPosts = allPosts.slice(startIndex, endIndex);
+
+        if (newPosts.length > 0) {
+          setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+          setHasMore(endIndex < allPosts.length);
+        } else {
+          setHasMore(false);
+        }
+      }
     } catch (error) {
       console.log("Data not found");
       setPosts([]);
+      setHasMore(false);
     }
     setLoading(false);
   };
 
   useEffect(() => {
     fetchProductData();
-  }, []);
+  }, [page]);
 
-  // 🆕 Pagination Logic
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
-  const totalPages = Math.ceil(posts.length / postsPerPage);
-
-  // 🆕 Change Page Handlers
-  const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-  };
-  const handlePrev = () => {
-    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
-  };
+  const rowCount = Math.ceil(posts.length / columnCount);
+  const gridHeight = Math.min(3, rowCount) * getRowHeight();
 
   return (
-    <div>
-      {/* Product Grid */}
+    <div className="w-full flex justify-center">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.3 }}
         className="z-10 relative w-full h-full flex justify-center items-center"
       >
-        {loading ? (
-          <div className='mt-24'>
-            <HomeSkeleton skeletonCount={6} />
+        {loading && posts.length === 0 ? (
+          <div className="mt-24">
+            <HomeSkeleton skeletonCount={8} />
           </div>
-        ) : currentPosts.length > 0 ? (
-          <div className="flex flex-col justify-center items-center mt-24">
-            <div className="grid grid-cols-2 lg:grid-cols-3 auto-rows-custom lg:w-11/12 pt-0 lg:pt-10 pb-8 lg:gap-y-32 lg:gap-x-14 h-auto">
-              {currentPosts.map((post) => (
-                <motion.div
-                  key={post._id || post.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 1.3 }}
-                  className="flex justify-center items-center h-fit"
-                >
-                  <Product post={post} />
-                </motion.div>
-              ))}
+        ) : posts.length > 0 ? (
+          <div className="flex flex-col justify-center items-center mt-24 pb-5 w-full">
+            <div className="w-full flex justify-center overflow-x-auto">
+              <Grid
+                ref={gridRef}
+                columnCount={columnCount}
+                rowCount={rowCount}
+                columnWidth={getColumnWidth}
+                rowHeight={getRowHeight}
+                height={gridHeight}
+                width={columnWidth * columnCount}
+                overscanRowCount={2}
+              >
+                {({ columnIndex, rowIndex, style }) => {
+                  const index = rowIndex * columnCount + columnIndex;
+                  if (index >= posts.length) return null;
+                  const post = posts[index];
+
+                  return (
+                    <div
+                      style={style}
+                      className="flex justify-center items-center p-2"
+                    >
+                      <motion.div
+                        key={post._id}
+                        ref={
+                          index === posts.length - 1
+                            ? lastPostElementRef
+                            : null
+                        }
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1.3 }}
+                      >
+                        <Product post={post} />
+                      </motion.div>
+                    </div>
+                  );
+                }}
+              </Grid>
             </div>
 
-            {/* 🆕 Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex gap-4 mt-24 mb-10">
-                <button
-                  onClick={handlePrev}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 bg-gray-200 text-black rounded disabled:opacity-50"
-                >
-                  Prev
-                </button>
-                <span className="px-4 py-2">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  onClick={handleNext}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 bg-gray-200 text-black rounded disabled:opacity-50"
-                >
-                  Next
-                </button>
+            {loading && posts.length > 0 && (
+              <div className="mt-4">
+                <HomeSkeleton skeletonCount={4} />
               </div>
             )}
           </div>

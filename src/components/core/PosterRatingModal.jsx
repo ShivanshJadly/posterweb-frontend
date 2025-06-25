@@ -1,6 +1,5 @@
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { RxCross2 } from "react-icons/rx"
 import ReactStars from "react-rating-stars-component"
 import { useSelector } from "react-redux"
 
@@ -8,7 +7,6 @@ import { createRating } from "../../services/operations/RatingAPI"
 import IconBtn from "../common/IconBtn"
 
 export default function PosterRatingModal({ setRatingModal,order }) {
-  const { user } = useSelector((state) => state.profile)
   const { token } = useSelector((state) => state.auth)
 
   const {

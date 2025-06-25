@@ -7,24 +7,15 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 
-// import image1 from '../../../additionalFile/home-image/homeImage_1.jpg';
-// import image2 from '../../../additionalFile/home-image/homeImage_2.jpg';
-// import image3 from '../../../additionalFile/home-image/homeImage_3.jpg';
+import image1 from '../../../additionalFile/home-image/homeImage_1.jpg';
+import image2 from '../../../additionalFile/home-image/homeImage_2.jpg';
+import image3 from '../../../additionalFile/home-image/homeImage_3.jpg';
 
 const Section_1 = () => {
   const slides = [
-    {
-      image: "/additionalFile/home-image/homeImage_1.jpg",
-      heading: "Posters That Make a Statement.",
-    },
-    {
-      image: "/additionalFile/home-image/homeImage_2.jpg",
-      heading: "Express Yourself, Shop Unique Posters Now!",
-    },
-    {
-      image: "/additionalFile/home-image/homeImage_3.jpg",
-      heading: "Art That Speaks, Posters That Inspire!",
-    },
+    { image: image1, heading: "Posters That Make a Statement." },
+    { image: image2, heading: "Express Yourself, Shop Unique Posters Now!" },
+    { image: image3, heading: "Art That Speaks, Posters That Inspire!" },
   ];
 
   return (
@@ -37,8 +28,8 @@ const Section_1 = () => {
         pagination={{ clickable: true }}
         loop={true}
         autoplay={{
-          delay: 3000, // Time between slides in milliseconds (3 seconds)
-          disableOnInteraction: false, // Continue autoplay after user interaction
+          delay: 3000, 
+          disableOnInteraction: false, 
         }}
       >
         {slides.map((slide, index) => (
@@ -50,7 +41,6 @@ const Section_1 = () => {
               </div>
               {/* Image */}
               <img
-                loading="lazy"
                 src={slide.image}
                 alt={`Carousel slide ${index + 1}`}
                 className="w-full md:h-[30rem] lg:h-[50rem] object-cover md:object-fill"

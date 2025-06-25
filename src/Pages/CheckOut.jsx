@@ -5,68 +5,112 @@ import { BuyPoster } from "../services/operations/paymentAPI";
 import { useNavigate } from "react-router-dom";
 import DeliveryForm from "../components/core/CheckOut/DeliveryForm";
 import { FaArrowLeft } from "react-icons/fa";
-import { getDeliveryAddress } from "../services/operations/deliveryAPI";
-import { setSelectedDelivery } from "../slices/deliverySlice";
+import { getAddress } from "../services/operations/deliveryAPI";
+import { setSelectedDelivery, setDeliveryAddress } from "../slices/deliverySlice";
 import { motion } from "framer-motion";
+import { getCartItems } from "../services/operations/cartAPI";
+import { setCart } from "../slices/cartSlice";
 
 const CheckOut = () => {
   const { cart } = useSelector((state) => state);
   const { user } = useSelector((state) => state.profile);
   const { token } = useSelector((state) => state.auth);
-  const { deliveryAddress, selectedDelivery } = useSelector(
-    (state) => state.delivery
-  );
+  const { selectedDelivery } = useSelector((state) => state.delivery);
 
   const [totalAmount, setTotalAmount] = useState(0);
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
+  const [address, setAddress] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const fetchCartItems = async () => {
+      if (!token) return;
+      setLoading(true);
+      try {
+        const data = await getCartItems(token);
+        dispatch(setCart(data));
+      } catch (error) {
+        console.error("Failed to fetch cart items:", error);
+        dispatch(setCart([]));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCartItems();
+  }, [token, dispatch]);
+
+  useEffect(() => {
+    const total = cart.reduce(
+      // Calculate total amount from cart items
+      (sum, item) => sum + item.poster?.price * item.quantity,
+      0
+    );
     setTotalAmount(total);
   }, [cart]);
 
+  //Fetch and set delivery address
   useEffect(() => {
-    if (token) {
-      dispatch(getDeliveryAddress(token));
-    }
-  }, [token]);
+    const fetchAddresses = async () => {
+      try {
+        const data = await getAddress(token);
+        setAddress(data);
+        dispatch(setDeliveryAddress(data));
+        const defaultAddr = data.find((addr) => addr.isDefault);
+        if (defaultAddr) {
+          dispatch(setSelectedDelivery(defaultAddr._id));
+        }
+      } catch (err) {
+        console.error("Failed to fetch address:", err);
+      }
+    };
+    if (token) fetchAddresses();
+  }, [token, dispatch]);
 
   const handlePayment = async () => {
-    if (!selectedDelivery) {
-      alert("Please select a delivery address before proceeding.");
-      return;
-    }
+  if (!selectedDelivery) {
+    alert("Please select a delivery address before proceeding.");
+    return;
+  }
 
-    const deliveryId = deliveryAddress.find(
-      (address) => address._id === selectedDelivery
-    );
+  const deliveryObj = address.find((addr) => addr._id === selectedDelivery);
+  if (!deliveryObj) {
+    alert("Selected delivery address is not valid.");
+    return;
+  }
 
-    if (!deliveryId) {
-      alert("Selected delivery address is not valid.");
-      return;
-    }
+  const posterDetails = cart.map((item) => ({
+    posterId: item.poster?._id,
+    quantity: item.quantity,
+    size: item?.size,
+  }));
 
-    const posterDetails = cart.map((item) => ({
-      posterId: item._id,
-      quantity: item.quantity,
-    }));
-
-    const userDetails = {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-    };
-
-    try {
-      await BuyPoster(token, posterDetails, userDetails, deliveryId, navigate, dispatch);
-    } catch (error) {
-      console.error("Error during payment:", error);
-      alert("Payment failed. Please try again.");
-    }
+  const userDetails = {
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
   };
+
+  const paymentMethod = "Online";
+
+  try {
+    await BuyPoster(
+      token,               
+      totalAmount,     
+      posterDetails,     
+      userDetails,         
+      deliveryObj,          
+      paymentMethod,       
+      navigate,             
+      dispatch              
+    );
+  } catch (error) {
+    console.error("Error during payment:", error);
+    alert("Payment failed. Please try again.");
+  }
+};
 
   return (
     <motion.div
@@ -76,11 +120,11 @@ const CheckOut = () => {
       className="flex justify-center pt-24"
     >
       <div className="flex flex-col lg:flex-row w-[80%] overflow-hidden">
-        {/* Delivery Details Section */}
+        {/* Delivery Section */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: "easeInOut"}}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
           className="lg:w-1/2 w-full p-4 pt-8"
         >
           {!showDeliveryForm ? (
@@ -89,27 +133,45 @@ const CheckOut = () => {
                 Select Delivery Address
               </h2>
               <form className="space-y-4">
-                {deliveryAddress.length > 0 ? (
-                  deliveryAddress.map((address) => (
-                    <label
-                      key={address._id}
-                      className="flex items-start space-x-2 p-3 border rounded-lg cursor-pointer hover:shadow transition"
-                    >
-                      <input
-                        type="radio"
-                        name="deliveryAddress"
-                        value={address._id}
-                        checked={selectedDelivery === address._id}
-                        onChange={() => dispatch(setSelectedDelivery(address._id))}
-                        className="mt-1"
-                      />
-                      <div>
-                        <p className="font-medium">{address.address}</p>
-                        <p className="text-sm text-gray-600">{`${address.city}, ${address.state}, ${address.pincode}`}</p>
-                        <p className="text-sm text-gray-600">{`Phone: ${address.phoneNumber}`}</p>
-                      </div>
-                    </label>
-                  ))
+                {address.length > 0 ? (
+                  address.map((addr) => {
+                    const isSelected = selectedDelivery === addr._id;
+                    return (
+                      <label
+                        key={addr._id}
+                        className={`flex items-start space-x-2 p-3 border rounded-lg cursor-pointer transition ${
+                          isSelected
+                            ? "border-black bg-gray-100 shadow-md"
+                            : "hover:shadow"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="deliveryAddress"
+                          value={addr._id}
+                          checked={isSelected}
+                          onChange={(e) =>
+                            dispatch(setSelectedDelivery(e.target.value))
+                          }
+                          className="mt-1"
+                        />
+                        <div>
+                          <p className="font-medium">{addr.addressLine1}</p>
+                          <p className="text-sm text-gray-600">
+                            {`${addr.city}, ${addr.state}, ${addr.pincode}`}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Phone: {addr.phoneNumber}
+                          </p>
+                          {addr.isDefault && (
+                            <span className="text-xs text-green-600 font-medium">
+                              Default Address
+                            </span>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })
                 ) : (
                   <p>No delivery addresses found. Please add one.</p>
                 )}
@@ -147,12 +209,26 @@ const CheckOut = () => {
           <div className="space-y-2">
             <div className="pr-2">
               {cart.map((item, index) => (
-                <CheckOutItem key={item._id} item={item} itemIndex={index} />
+                <CheckOutItem
+                  key={item._id}
+                  item={{
+                    _id: item.poster?._id,
+                    title: item.poster?.title,
+                    description: item.poster?.description,
+                    price: item.poster?.price,
+                    posterImage: item.poster?.posterImage,
+                    size: item.size,
+                    quantity: item.quantity,
+                  }}
+                  itemIndex={index}
+                />
               ))}
             </div>
             <div className="flex justify-between ml-2 text-md text-gray-600">
               <span>Total Items:</span>
-              <span>{cart.reduce((total, item) => total + item.quantity, 0)}</span>
+              <span>
+                {cart.reduce((total, item) => total + item.quantity, 0)}
+              </span>
             </div>
             <div className="flex justify-between text-md text-gray-600 ml-2">
               <span>Shipment:</span>

@@ -10,11 +10,8 @@ import Home from "./Pages/Home";
 import Cart from "./Pages/Cart";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
-import VerifyEmail from "./Pages/VerifyEmail";
 import Dashboard from "./Pages/Dashboard";
 import { Error } from "./Pages/Error";
-import ForgotPassword from "./Pages/ForgotPassword";
-import UpdatePassword from "./Pages/UpdatePassword";
 import Categories from "./Pages/Categories";
 
 
@@ -27,9 +24,8 @@ import CheckOut from "./Pages/CheckOut";
 import PosterDetails from "./Pages/PosterDetails";
 import CategoryWisePosterPage from "./components/core/Categories/CategoryWisePosterPage";
 import ScrollToTop from "./components/common/ScrollToTop";
-import Test from "./Pages/Test";
-import BuyNow from "./Pages/BuyNow";
 import ViewAllPoster from "./Pages/ViewAllPoster";
+import  OrderHistory  from "./Pages/OrderHistory";
 
 function App() {
   const location = useLocation();
@@ -38,10 +34,9 @@ function App() {
   const hideNavbarPaths = [
     "/login",
     "/signup",
-    "/verify-email",
     "/authentication",
   ];
-  const hideFooterPaths = ["/login", "/signup", "/verify-email","/checkout"];
+  const hideFooterPaths = ["/login", "/signup","/checkout"];
 
   const shouldHideNavbar = hideNavbarPaths.includes(location.pathname);
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
@@ -59,7 +54,6 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/test" element={<Test />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/allposters" element={<ViewAllPoster />} />
         <Route path="/categories" element={<Categories />}/>
@@ -77,34 +71,10 @@ function App() {
           }
         />
         <Route
-          path="forgot-password"
-          element={
-            <OpenRoute>
-              <ForgotPassword />
-            </OpenRoute>
-          }
-        />
-        <Route
-          path="update-password/:id"
-          element={
-            <OpenRoute>
-              <UpdatePassword />
-            </OpenRoute>
-          }
-        />
-        <Route
           path="signup"
           element={
             <OpenRoute>
               <Signup />
-            </OpenRoute>
-          }
-        />
-        <Route
-          path="verify-email"
-          element={
-            <OpenRoute>
-              <VerifyEmail />
             </OpenRoute>
           }
         />
@@ -119,8 +89,6 @@ function App() {
         >
           {/* Route for all users */}
           <Route path="/dashboard" element={<Dashboard />} />
-          {/* <Route path="dashboard/Settings" element={<Settings />} /> */}
-          {/* <Route path="dashboard/order-history" element={<OrderHistory />} /> */}
         </Route>
 
         <Route
@@ -132,10 +100,10 @@ function App() {
           }
           />
         <Route
-          path="buynow"
+          path="order-history"
           element={
             <PrivateRoute>
-              <BuyNow />
+              <OrderHistory/>
             </PrivateRoute>
           }
           />

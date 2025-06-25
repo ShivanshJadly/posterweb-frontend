@@ -1,48 +1,48 @@
 const BASE_URL = process.env.REACT_APP_BASE_URL
-// AUTH ENDPOINTS
-export const endpoints = {
-  SENDOTP_API: BASE_URL + "/auth/sendotp",
-  SIGNUP_API: BASE_URL + "/auth/signup",
+
+export const userEndpoints = {
   LOGIN_API: BASE_URL + "/users/login",
-  RESETPASSTOKEN_API: BASE_URL + "/auth/reset-password-token",
-  RESETPASSWORD_API: BASE_URL + "/auth/reset-password",
-  GOOGLE_SIGNIN_API: BASE_URL + "/auth/googlelogin",
+  SIGNUP_API: BASE_URL + "/users/signup",
+  LOGOUT_API: BASE_URL + "/users/logout",
+  ADD_ADDRESS_API: BASE_URL + "/users/add-address",
+  GET_ADDRESS_API: BASE_URL + "/users/get-address",
+  ADD_WISHLIST_API: BASE_URL + "/users/add-wishlist",
+  GET_WISHLIST_API: BASE_URL + "/users/get-wishlist",
+  REMOVE_FROM_WISHLIST_API: BASE_URL + "/users/remove-from-wishlist",
 }
 
-// PROFILE ENDPOINTS
-export const profileEndpoints = {
-  GET_USER_DETAILS_API: BASE_URL + "/profile/getUserDetails",
+export const posterEndpointsV2 = {
+  GET_POSTER_INFO_API: BASE_URL + "/posters/get-poster-info",
+  GET_POSTER_API: BASE_URL + "/posters/get-posters",
+  GET_CATEGORY_WISE_POSTER_API: BASE_URL + "/posters/get-category-wise-poster",
+  GET_SEARCH_POSTER_API: BASE_URL + "/posters/search-posters",
+  GET_SUGGEST_POSTER_API: BASE_URL + "/posters/live-search-suggestions",
 }
 
-// SETTINGS PAGE API
-export const settingsEndpoints = {
-  UPDATE_DISPLAY_PICTURE_API: BASE_URL + "/profile/updateDisplayPicture",
-  UPDATE_PROFILE_API: BASE_URL + "/profile/updateProfile",
-  CHANGE_PASSWORD_API: BASE_URL + "/auth/changepassword",
-  DELETE_PROFILE_API: BASE_URL + "/profile/deleteProfile",
+
+export const orderEndpoints = {
+  GET_ORDER_API: BASE_URL + "/orders/my-orders"
 }
 
-// POSTER ENDPOINTS
-export const posterEndpoints = {
-  GET_ALL_POSTER_API: BASE_URL + "/poster/getAllPoster",
-  POSTER_DETAILS_API: BASE_URL + "/poster/getPosterDetails",
-  GET_MULTIPLE_POSTER_API: BASE_URL + "/poster/getMultiplePosterDetails",
-  GET_ORDER_HISTORY: BASE_URL + "/poster/getOrderHistory",
-  GET_ALL_CATEGORIES_API: BASE_URL + "/poster/showAllCategories",
-  CREATE_POSTER_RATING_API: BASE_URL + "/poster/createRating",
-  GET_AVERAGE_RATING_API: BASE_URL + "/poster/getAverageRating",
-  GET_CATEGORY_WISE_POSTER_API: BASE_URL + "/poster/getCategoryPageDetails",
+export const reviewEndpoints = {
+  ADD_REVIEW_API: BASE_URL + "/reviews/add-review",
+  GET_POSTER_REVIEWS_API: BASE_URL + "/reviews/get-poster-review"
 }
 
-// PAYMENTS ENDPOINTS
-export const paymentEndpoints = {
-  POSTER_PAYMENT_API: BASE_URL + "/payment/capturePayment",
-  POSTER_VERIFY_API: BASE_URL + "/payment/verifyPayment",
-  SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail",
+export const categoryEndpoints = {
+  ADD_CATEGORY_API: BASE_URL + "/category/add-category",
+  GET_ALL_CATEGORIES_API: BASE_URL + "/category/get-category"
 }
 
-// DELIVERY ENDPOINTS
-export const deliveryEndpoints = {
-  ADD_DELIVERY_API: BASE_URL + "/delivery/addDelivery",
-  GET_DELIVERY_ADDRESS_API: BASE_URL + "/delivery/getDeliveryAddress",
+export const cartEndpoints = {
+  ADD_CART : BASE_URL + "/cart",
+  GET_CART_ITEMS: BASE_URL + "/cart",
+  UPDATE_CART_ITEM: BASE_URL + "/cart",
+  REMOVE_CART_ITEM: BASE_URL + "/cart",
+  CLEAR_CART: BASE_URL + "/cart/clearCart",
+}
+
+export const paymentEndpointsV2 = {
+  POSTER_PAYMENT_API: BASE_URL + "/payment/create-order",
+  POSTER_VERIFY_API: BASE_URL + "/payment/verify-payment"
 }

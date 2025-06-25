@@ -6,7 +6,6 @@ export function Error() {
   const [isPageLoaded, setIsPageLoaded] = useState(false);
 
   useEffect(() => {
-    // Trigger animation only when the page is loaded
     setIsPageLoaded(true);
   }, []);
 

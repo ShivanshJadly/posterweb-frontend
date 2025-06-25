@@ -1,52 +1,28 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import {
   TiStarFullOutline,
   TiStarHalfOutline,
   TiStarOutline,
-} from "react-icons/ti"
-import { getAvgRating } from "../../services/operations/RatingAPI"
-import { useSelector } from "react-redux"
+} from "react-icons/ti";
 
-function RatingStars({ posterId,Star_Size = 20 }) { // Set default size
-  const { token } = useSelector((state) => state.auth)
-
-  // State to store the average rating and star counts
-  const [avgReviewCount, setAvgReviewCount] = useState(0)
+function RatingStars({ avgRating = 0, Star_Size = 20 }) {
   const [starCount, setStarCount] = useState({
     full: 0,
     half: 0,
     empty: 5,
-  })
+  });
 
   useEffect(() => {
-    async function fetchAvgRating() {
-      try {
-        if (!posterId) return
+    const fullStars = Math.floor(avgRating);
+    const halfStar = avgRating - fullStars >= 0.5 ? 1 : 0;
+    const emptyStars = 5 - fullStars - halfStar;
 
-        // Fetch rating from API
-        const response = await getAvgRating(posterId, token)
-
-        if (response >= 0) {
-          setAvgReviewCount(response)
-        }
-      } catch (error) {
-        console.error("Error fetching average rating:", error)
-      }
-    }
-
-    fetchAvgRating()
-  }, [posterId, token])
-
-  useEffect(() => {
-    // Calculate star breakdown
-    const wholeStars = Math.floor(avgReviewCount) || 0
-    const hasHalfStar = !Number.isInteger(avgReviewCount)
     setStarCount({
-      full: wholeStars,
-      half: hasHalfStar ? 1 : 0,
-      empty: 5 - wholeStars - (hasHalfStar ? 1 : 0),
-    })
-  }, [avgReviewCount])
+      full: fullStars,
+      half: halfStar,
+      empty: emptyStars,
+    });
+  }, [avgRating]);
 
   return (
     <div className="flex gap-1 text-yellow-500">
@@ -60,7 +36,7 @@ function RatingStars({ posterId,Star_Size = 20 }) { // Set default size
         <TiStarOutline key={`empty-${i}`} size={Star_Size} />
       ))}
     </div>
-  )
+  );
 }
 
-export default RatingStars
+export default RatingStars;
