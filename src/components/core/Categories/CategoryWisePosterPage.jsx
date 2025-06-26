@@ -1,22 +1,14 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { getCategoryWisePosterV2 } from "../../../services/operations/posterDetailsAPI";
 import Product from "../../Product";
 import CategoriesSkeleton from "../../common/skeleton/CategoriesSkeleton";
-import { VariableSizeGrid as Grid } from "react-window";
 
 const CategoryWisePosterPage = () => {
   const { id: categoryId } = useParams();
   const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const gridRef = useRef();
-
-  const columnCount = 3;
-  const columnWidth = 350;
-
-  const getRowHeight = useCallback(() => 550, []);
-  const getColumnWidth = useCallback(() => columnWidth, []);
 
   useEffect(() => {
     const fetchCategoryWisePoster = async () => {
@@ -42,44 +34,33 @@ const CategoryWisePosterPage = () => {
         <CategoriesSkeleton skeletonCount={6} />
       </div>
     );
+
   if (error) return <div className="text-red-500">{error}</div>;
 
-  const rowCount = Math.ceil(categoryData.length / columnCount);
-  const gridHeight = Math.min(3, rowCount) * getRowHeight();
-
   return (
-    <div className="flex justify-center items-center mt-16 sm:mt-20 md:mt-28 lg:mt-20 w-full overflow-x-hidden">
-      <div className="w-full max-w-[1100px] flex justify-center">
-        {categoryData && categoryData.length > 0 ? (
-          <div className="overflow-x-auto">
-            <Grid
-              ref={gridRef}
-              columnCount={columnCount}
-              rowCount={rowCount}
-              columnWidth={getColumnWidth}
-              rowHeight={getRowHeight}
-              height={gridHeight}
-              width={columnWidth * columnCount}
-              overscanRowCount={2}
-            >
-              {({ columnIndex, rowIndex, style }) => {
-                const index = rowIndex * columnCount + columnIndex;
-                if (index >= categoryData.length) return null;
-                const poster = categoryData[index];
-
-                return (
-                  <div
-                    style={style}
-                    className="flex justify-center items-center p-2"
-                  >
-                    <Product post={poster} />
-                  </div>
-                );
-              }}
-            </Grid>
+    <div className="flex justify-center min-h-screen items-center px-4 py-10 mt-20 sm:mt-14 lg:mt-10">
+      <div className="w-full max-w-screen-xl">
+        {categoryData.length > 0 ? (
+          <div
+            className="
+              grid gap-6
+              grid-cols-[repeat(auto-fit,minmax(180px,1fr))]
+              sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]
+              md:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]
+              lg:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]
+              xl:grid-cols-[repeat(auto-fit,minmax(300px,1fr))]
+            "
+          >
+            {categoryData.map((poster) => (
+              <div key={poster._id} className="flex justify-center">
+                <Product post={poster} />
+              </div>
+            ))}
           </div>
         ) : (
-          <div>No posters found in this category.</div>
+          <div className="text-center text-lg font-medium text-gray-600">
+            No posters found in this category.
+          </div>
         )}
       </div>
     </div>

@@ -116,40 +116,21 @@ const Home = () => {
           {loading ? (
             <HomeSkeleton skeletonCount={8} />
           ) : posts.length > 0 ? (
-            <div className="flex flex-col justify-center items-center sm:mt-[10rem] md:mt-[15rem] lg:mt-0 mt-5">
-              <div className="flex justify-center items-center w-full overflow-x-auto">
-                <Grid
-                  columnCount={gridProps.columnCount}
-                  columnWidth={gridProps.columnWidth}
-                  height={gridProps.height}
-                  rowCount={2}
-                  rowHeight={gridProps.rowHeight}
-                  width={gridProps.width}
-                >
-                  {({ columnIndex, rowIndex, style }) => {
-                    const index = rowIndex * gridProps.columnCount + columnIndex;
-                    if (index >= visiblePosts.length) return null;
-                    const post = visiblePosts[index];
-
-                    return (
-                      <div
-                        style={{ ...style, padding: 4 }}
-                        className="flex justify-center items-center h-fit"
-                      >
-                        <motion.div
-                          key={post._id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 1.3 }}
-                          className="flex justify-center items-center h-fit"
-                        >
-                          <Product post={post} />
-                        </motion.div>
-                      </div>
-                    );
-                  }}
-                </Grid>
+            <div className="flex flex-col justify-center items-center sm:mt-[10rem] md:mt-[15rem] lg:mt-10 mt-5">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 w-full max-w-[1600px] px-2">
+                {visiblePosts.map((post) => (
+                  <motion.div
+                    key={post._id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1.3 }}
+                    className="flex justify-center px-1"
+                  >
+                    <Product post={post} />
+                  </motion.div>
+                ))}
               </div>
+
 
               <motion.div
                 initial={{ opacity: 0 }}
