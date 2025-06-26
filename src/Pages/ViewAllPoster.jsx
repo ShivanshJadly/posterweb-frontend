@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { getPoster } from "../services/operations/posterDetailsAPI";
 import HomeSkeleton from "../components/common/skeleton/HomeSkeleton";
 import Product from "../components/Product";
-import { VariableSizeGrid as Grid } from "react-window";
 
 const ViewAllPoster = () => {
   const [posts, setPosts] = useState([]);
@@ -11,15 +10,11 @@ const ViewAllPoster = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [allPosts, setAllPosts] = useState([]);
-  const postsPerPage = 8;
+
   const observer = useRef();
-  const gridRef = useRef();
+  const containerRef = useRef();
 
-  const columnCount = 4;
-  const columnWidth = 350;
-
-  const getRowHeight = useCallback(() => 600, []);
-  const getColumnWidth = useCallback(() => columnWidth, []);
+  const postsPerPage = 8;
 
   const lastPostElementRef = useCallback(
     (node) => {
@@ -68,9 +63,6 @@ const ViewAllPoster = () => {
     fetchProductData();
   }, [page]);
 
-  const rowCount = Math.ceil(posts.length / columnCount);
-  const gridHeight = Math.min(3, rowCount) * getRowHeight();
-
   return (
     <div className="w-full flex justify-center">
       <motion.div
@@ -85,44 +77,25 @@ const ViewAllPoster = () => {
           </div>
         ) : posts.length > 0 ? (
           <div className="flex flex-col justify-center items-center mt-24 pb-5 w-full">
-            <div className="w-full flex justify-center overflow-x-auto">
-              <Grid
-                ref={gridRef}
-                columnCount={columnCount}
-                rowCount={rowCount}
-                columnWidth={getColumnWidth}
-                rowHeight={getRowHeight}
-                height={gridHeight}
-                width={columnWidth * columnCount}
-                overscanRowCount={2}
-              >
-                {({ columnIndex, rowIndex, style }) => {
-                  const index = rowIndex * columnCount + columnIndex;
-                  if (index >= posts.length) return null;
-                  const post = posts[index];
-
-                  return (
-                    <div
-                      style={style}
-                      className="flex justify-center items-center p-2"
-                    >
-                      <motion.div
-                        key={post._id}
-                        ref={
-                          index === posts.length - 1
-                            ? lastPostElementRef
-                            : null
-                        }
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1.3 }}
-                      >
-                        <Product post={post} />
-                      </motion.div>
-                    </div>
-                  );
-                }}
-              </Grid>
+            {/* Grid layout inspired by your screenshot */}
+            <div
+              ref={containerRef}
+              className="w-full px-2 md:px-4 flex justify-center overflow-x-hidden"
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-[1600px]">
+                {posts.map((post, index) => (
+                  <motion.div
+                    key={post._id}
+                    ref={index === posts.length - 1 ? lastPostElementRef : null}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1.3 }}
+                    className="flex justify-center items-center p-2"
+                  >
+                    <Product post={post} />
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
             {loading && posts.length > 0 && (
