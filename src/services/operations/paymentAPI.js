@@ -23,8 +23,8 @@ async function loadScript(src) {
   });
 }
 
-// ✅ Buy Poster and Trigger Razorpay Payment
-export async function BuyPoster(token, amount, posterDetails, userDetails, shippingAddress, navigate, dispatch) {
+// Buy Poster and Trigger Razorpay Payment
+export async function BuyPoster(token, amount, posterDetails, userDetails, shippingAddress, paymentMethod, navigate, dispatch) {
   try {
     const isScriptLoaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
     if (!isScriptLoaded) {
@@ -57,7 +57,7 @@ export async function BuyPoster(token, amount, posterDetails, userDetails, shipp
       },
       handler: async (response) => {
         const toastId = toast.loading("Processing payment...");
-        await verifyPayment(response, amount, token, navigate, dispatch, posterDetails, shippingAddress, "Online");
+        await verifyPayment(response, amount, token, navigate, dispatch, posterDetails, shippingAddress, paymentMethod);
         toast.dismiss(toastId);
       },
       theme: {
@@ -79,8 +79,8 @@ export async function BuyPoster(token, amount, posterDetails, userDetails, shipp
   }
 }
 
-// ✅ Verify Payment and Place Order
-export async function verifyPayment(paymentData, amount, token, navigate, dispatch, posterDetails, shippingAddress, paymetMethod) {
+// Verify Payment and Place Order
+export async function verifyPayment(paymentData, amount, token, navigate, dispatch, posterDetails, shippingAddress, paymentMethod) {
   dispatch(setPaymentLoading(true));
 
   try {
@@ -100,7 +100,7 @@ export async function verifyPayment(paymentData, amount, token, navigate, dispat
         amount,
         orderItems,
         shippingAddress: shippingAddress._id,
-        paymetMethod,
+        paymentMethod,
       },
       { Authorization: `Bearer ${token}` }
     );
