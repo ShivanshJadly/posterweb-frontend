@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { TiPlus, TiMinus } from "react-icons/ti";
 import { getPosterInfo } from "../services/operations/posterDetailsAPI";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import RatingStars from "../components/common/RatingStars";
 import { FaBoxOpen } from "react-icons/fa";
@@ -22,6 +22,7 @@ const PosterDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("A4");
   const { token } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
 
   async function fetchProductData(posterId) {
     setLoading(true);
@@ -38,25 +39,30 @@ const PosterDetails = () => {
   useEffect(() => {
     fetchProductData(posterId);
   }, [posterId]);
-  console.log("token", token);
+
+  // console.log("token", token);
+
+  // add to cart
   const addToCartV2 = async () => {
-    if (!selectedSize) {
-      toast.error("Please select a size before adding to the cart.");
-      return;
+    if(!token){
+      navigate("/login");
     }
-    try {
-      await addToCart(token, posterId, selectedSize, quantity);
-      toast.success(
-        `${quantity} item(s) of size ${selectedSize} added to Cart`
-      );
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      toast.error("Failed to add item to cart");
+    else{
+      if (!selectedSize) {
+        toast.error("Please select a size before adding to the cart.");
+        return;
+      }
+      try {
+        await addToCart(token, posterId, selectedSize, quantity);
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+        toast.error("Failed to add item to cart");
+      }
     }
   };
 
   const sizes = ["A3", "A4", "A5"];
-  console.log("data:", posts);
+  // console.log("data:", posts);
 
   return (
     <div className="flex justify-evenly lg:w-full lg:mx-auto overflow-x-hidden pt-16 overflow-y-hidden dark:bg-[#292929] dark:text-white">

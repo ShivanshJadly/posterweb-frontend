@@ -1,25 +1,28 @@
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { remove } from "../slices/cartSlice";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { removeFromCart } from "../services/operations/cartAPI";
+import toast from "react-hot-toast";
 
-const CartItem = ({ item }) => {
-  const dispatch = useDispatch();
+const CartItem = ({ item , refreshCart}) => {
   const navigate = useNavigate();
   const { token } = useSelector((state) => state.auth);
 
-
- const handleRemoveFromCart  = async () => {
-    try {
-      await removeFromCart(token, item?._id)
-    }catch (error) {
-      console.error("Error removing item from cart:", error);
-    }
+console.log("item: ",item);
+ const handleRemoveFromCart = async () => {
+  const toastId = toast.loading("Removing item...");
+  try {
+    await removeFromCart(token, item?._id);
+    await refreshCart();
+    toast.success("Item removed from cart", { id: toastId });
+  } catch (error) {
+    console.error("Error removing item from cart:", error);
+    toast.error("Failed to remove item", { id: toastId });
   }
+};
 
   const handleClick = () => {
-    navigate(`/posters/${item?.poster?._id}`);
+    navigate(`/poster/${item?.poster?._id}`);
   };
 
   return (

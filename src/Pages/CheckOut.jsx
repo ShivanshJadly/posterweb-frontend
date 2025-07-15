@@ -9,14 +9,12 @@ import { getAddress } from "../services/operations/deliveryAPI";
 import { setSelectedDelivery, setDeliveryAddress } from "../slices/deliverySlice";
 import { motion } from "framer-motion";
 import { getCartItems } from "../services/operations/cartAPI";
-import { setCart } from "../slices/cartSlice";
 
 const CheckOut = () => {
-  const { cart } = useSelector((state) => state);
   const { user } = useSelector((state) => state.profile);
   const { token } = useSelector((state) => state.auth);
   const { selectedDelivery } = useSelector((state) => state.delivery);
-
+  const [posts, setPosts] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
   const [address, setAddress] = useState([]);
@@ -31,10 +29,10 @@ const CheckOut = () => {
       setLoading(true);
       try {
         const data = await getCartItems(token);
-        dispatch(setCart(data));
+        setPosts(data);
       } catch (error) {
         console.error("Failed to fetch cart items:", error);
-        dispatch(setCart([]));
+        setPosts([]);
       } finally {
         setLoading(false);
       }
@@ -43,13 +41,13 @@ const CheckOut = () => {
   }, [token, dispatch]);
 
   useEffect(() => {
-    const total = cart.reduce(
+    const total = posts.reduce(
       // Calculate total amount from cart items
       (sum, item) => sum + item.poster?.price * item.quantity,
       0
     );
     setTotalAmount(total);
-  }, [cart]);
+  }, [posts]);
 
   //Fetch and set delivery address
   useEffect(() => {
@@ -81,7 +79,7 @@ const CheckOut = () => {
     return;
   }
 
-  const posterDetails = cart.map((item) => ({
+  const posterDetails = posts.map((item) => ({
     posterId: item.poster?._id,
     quantity: item.quantity,
     size: item?.size,
@@ -208,7 +206,7 @@ const CheckOut = () => {
           <h2 className="text-2xl text-gray-800">Order Summary</h2>
           <div className="space-y-2">
             <div className="pr-2">
-              {cart.map((item, index) => (
+              {posts.map((item, index) => (
                 <CheckOutItem
                   key={item._id}
                   item={{
@@ -227,7 +225,7 @@ const CheckOut = () => {
             <div className="flex justify-between ml-2 text-md text-gray-600">
               <span>Total Items:</span>
               <span>
-                {cart.reduce((total, item) => total + item.quantity, 0)}
+                {posts.reduce((total, item) => total + item.quantity, 0)}
               </span>
             </div>
             <div className="flex justify-between text-md text-gray-600 ml-2">

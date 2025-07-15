@@ -19,6 +19,7 @@ export const getPoster = async () => {
     if (!response?.data?.success) {
       throw new Error("Could not fetch poster");
     }
+    console.log(response);
     result = response?.data?.data?.posters || [];
   } catch (error) {
     console.error("getPoster API error:", error);

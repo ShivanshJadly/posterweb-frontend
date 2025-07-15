@@ -11,6 +11,7 @@ import { ThemeProvider } from "../../context/theme";
 import iBag from "../../additionalFile/invert-bag.png";
 import iLogo from "../../additionalFile/InvLogo.png";
 import { logout } from "../../services/operations/authAPI";
+import { getCartItems } from "../../services/operations/cartAPI";
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -28,11 +29,27 @@ const Navbar = () => {
 
   const token = useSelector((state) => state.auth?.token);
   const user = useSelector((state) => state.profile?.user);
-  const cart = useSelector((state) => state.cart || []);
+  const [posts,setPosts] = useState([]);
 
   const [themeMode, setThemeMode] = useState("light");
   const lightTheme = () => setThemeMode("light");
   const darkTheme = () => setThemeMode("dark");
+
+  const fetchCartItems = async () => {
+      if (!token) return;
+      setPosts([]);
+      try {
+        const data = await getCartItems(token);
+        setPosts(data);
+      } catch (error) {
+        console.error("Failed to fetch cart items:", error);
+        setPosts([]);
+      }
+    };
+  
+    useEffect(() => {
+      fetchCartItems();
+    }, [token]);
 
   useEffect(() => {
     document.querySelector("html").classList.remove("light", "dark");
@@ -190,9 +207,9 @@ const Navbar = () => {
                 ) : (
                   <img src={bag} alt="Shopping Bag" className="h-7" />
                 )}
-                {cart.length > 0 && (
+                {posts.length > 0 && (
                   <span className="absolute -top-1 -right-2 bg-black text-xs w-5 h-5 flex justify-center items-center animate-bounce rounded-full text-white">
-                    {cart.length}
+                    {posts.length}
                   </span>
                 )}
               </div>

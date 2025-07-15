@@ -1,5 +1,5 @@
 import { toast } from "react-hot-toast";
-import { removePurchasedPosters } from "../../slices/cartSlice";
+// import { removePurchasedPosters } from "../../slices/cartSlice";
 import { setPaymentLoading } from "../../slices/posterSlice";
 import { apiConnector } from "../apiConnector";
 import { paymentEndpointsV2 } from "../apis";
@@ -112,7 +112,7 @@ export async function verifyPayment(paymentData, amount, token, navigate, dispat
     toast.success("Payment Successful! Order placed.");
 
     const purchasedPosterIds = posterDetails.map((poster) => poster.posterId);
-    dispatch(removePurchasedPosters(purchasedPosterIds));
+    // dispatch(removePurchasedPosters(purchasedPosterIds));
 
     navigate("/order-history");
 
