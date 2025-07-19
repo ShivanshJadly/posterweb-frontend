@@ -38,7 +38,7 @@ export const getCartItems = async (token) => {
     if (!response?.data?.success) {
       throw new Error("Could not fetch cart items");
     }
-    result = response.data.data || [];
+    result = response?.data?.data || [];
     console.log("result:",result);
   } catch (error) {
     console.error("Error fetching to cart:", error);
