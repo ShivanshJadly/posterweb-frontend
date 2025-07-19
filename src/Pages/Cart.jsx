@@ -20,7 +20,17 @@ const Cart = () => {
   const { token } = useSelector((state) => state.auth);
 
   const fetchCartItems = async () => {
-    if (!token) return;
+    // --- BUG FIX ---
+    // If the user is not logged in, there's no need to show a loading screen.
+    // Immediately set loading to false and ensure the cart is empty.
+    if (!token) {
+      setPosts([]);
+      setPageLoading(false);
+      setLoading(false);
+      return;
+    }
+    // --- END FIX ---
+
     setLoading(true);
     try {
       const data = await getCartItems(token);
