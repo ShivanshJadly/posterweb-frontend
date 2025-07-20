@@ -18,7 +18,7 @@ const Product = ({ post }) => {
           <span className="text-sm sm:text-base">₹{post.price}</span>
         </div>
 
-          <p className="text-[0.8rem] sm:text-sm text-gray-500 mt-1">{post.description}</p>
+          <p className="text-[0.8rem] sm:text-sm text-gray-500 mt-1">{post?.description.slice(0,20)}...</p>
       </div>
       </div>
     </div>
