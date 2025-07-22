@@ -9,7 +9,6 @@ const {LOGIN_API, SIGNUP_API} = userEndpoints
 
 export function signUp(fullName, email, password, navigate) {
   return async (dispatch) => {
-    const toastId = toast.loading("Loading...");
     dispatch(setLoading(true));
     try {
       const response = await apiConnector("POST", SIGNUP_API, {
@@ -33,14 +32,12 @@ export function signUp(fullName, email, password, navigate) {
       return { error: true, message: error.message };
     } finally {
       dispatch(setLoading(false));
-      toast.dismiss(toastId);
     }
   };
 }
 
 export function login(email, password, navigate) {
   return async (dispatch) => {
-    const toastId = toast.loading("Loading...")
     dispatch(setLoading(true))
     try {
       const response = await apiConnector("POST", LOGIN_API, {
@@ -67,7 +64,6 @@ export function login(email, password, navigate) {
       toast.error("Incorrect email or password!")
     }
     dispatch(setLoading(false))
-    toast.dismiss(toastId)
   }
 }
 

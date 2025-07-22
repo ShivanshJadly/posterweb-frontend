@@ -7,9 +7,10 @@ import "../../../font/font.css";
 
 import { login } from "../../../services/operations/authAPI";
 
-function LoginForm() {
-  const navigate = useNavigate(); 
-  const dispatch = useDispatch(); 
+// Receive isLoading prop
+function LoginForm({ isLoading }) {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,44 +27,46 @@ function LoginForm() {
     }));
   };
 
-  const handleOnSubmit = (e) => {
+  const handleOnSubmit = async (e) => {
     e.preventDefault();
 
     if (!password) {
-        toast.error("Password cannot be empty!");
-        return;
+      toast.error("Password cannot be empty!");
+      return;
     }
 
-    dispatch(login(email, password, navigate))
-        .then((response) => {
-            if (response.error) {
-                toast.error("Incorrect email or password!");
-            }
-        })
-        .catch(() => {
-            // toast.error("Something went wrong. Please try again.");
-        });
-};
+    try {
+      // Dispatch action and let Redux handle loading state
+      const response = await dispatch(login(email, password, navigate));
+      if (response && response.error) {
+        toast.error("Incorrect email or password!");
+      }
+    } catch (error) {
+      // Error handling is often managed by the authAPI service itself,
+      // but you can add more specific client-side toasts if needed.
+    }
+  };
 
   return (
-    <form onSubmit={handleOnSubmit} className="flex w-full flex-col gap-y-8 pl-12"> 
-      <label className="w-[82%]">
-        <p className="mb-1 text-[1.1rem] leading-[1.375rem] text-richblack-5 ">
-          E-mail
+    <form onSubmit={handleOnSubmit} className="flex w-full flex-col gap-y-5">
+      <label className="w-full">
+        <p className="mb-2 text-sm font-medium text-gray-700">
+          E-mail <sup className="text-red-500">*</sup>
         </p>
         <input
           required
-          type="text"
+          type="email"
           name="email"
           value={email}
           onChange={handleOnChange}
           placeholder="Enter email"
-          className="form-style w-full rounded-sm text-gray-700 p-2 border border-black focus:outline-none"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-700 focus:border-gray-700 outline-none transition-all duration-200 shadow-sm bg-gray-100 text-gray-800"
+          disabled={isLoading} // Disable input when loading
         />
       </label>
-      <label className="relative w-[82%]">
-        <p className=" mb-1 text-[1.1rem] leading-[1.375rem] text-richblack-5">
-          Password
+      <label className="relative w-full">
+        <p className="mb-2 text-sm font-medium text-gray-700">
+          Password <sup className="text-red-500">*</sup>
         </p>
         <input
           required
@@ -72,31 +75,36 @@ function LoginForm() {
           value={password}
           onChange={handleOnChange}
           placeholder="Enter Password"
-          className="form-style w-full rounded-sm text-gray-700 p-2 border border-black focus:outline-none"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-700 focus:border-gray-700 outline-none transition-all duration-200 shadow-sm bg-gray-100 text-gray-800"
+          disabled={isLoading} // Disable input when loading
         />
-        {password && ( 
+        {password && (
           <span
-            onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-[35px] z-[10] cursor-pointer"
+            onClick={() => !isLoading && setShowPassword((prev) => !prev)} // Disable click when loading
+            className={`absolute right-3 top-[38px] z-[10] cursor-pointer text-gray-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:text-gray-700'}`}
           >
             {showPassword ? (
-              <AiOutlineEyeInvisible fontSize={24} fill="#AFB2BF" />
+              <AiOutlineEyeInvisible fontSize={24} />
             ) : (
-              <AiOutlineEye fontSize={24} fill="#AFB2BF" />
+              <AiOutlineEye fontSize={24} />
             )}
           </span>
         )}
       </label>
-      <div className="flex items-center justify-between w-full mt-6 pl-2 lg:pr-12">
-        <Link to="/forgot-password">
-          <p className="text-base text-blue-700 hover:underline">
+      <div className="flex items-center justify-center w-full mt-4">
+        {/* <Link
+          to="/forgot-password"
+          className={`${isLoading ? 'pointer-events-none opacity-50' : ''}`} // Disable link when loading
+        >
+          <p className="text-sm text-gray-600 hover:underline transition-colors duration-200">
             forgot password?
           </p>
-        </Link>
+        </Link> */}
 
         <button
           type="submit"
-          className="rounded-md bg-black text-white py-[0.6rem] px-[2rem] font-bold hover:scale-105 transition-transform duration-300"
+          className="rounded-md bg-gray-800 text-white py-2.5 px-6 font-semibold shadow-md hover:bg-gray-900 transition-all duration-300 transform hover:scale-105"
+          disabled={isLoading} // Disable button when loading
         >
           LOGIN
         </button>
