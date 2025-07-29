@@ -5,6 +5,7 @@ import { Dialog } from "@headlessui/react";
 import { addReview } from "../services/operations/RatingAPI";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 // --- SVG Icons for UI Elements ---
 const StarIcon = ({ className, onClick, onMouseEnter, onMouseLeave }) => (
@@ -64,21 +65,25 @@ const OrderHistory = () => {
     if (!intRating || !comment.trim()) {
       // Replace alert with a more modern notification system if available
       console.error("Please provide a rating and a comment.");
+      // toast.error("Please provide a rating and a comment.");
       return;
     }
 
     const posterId = selectedItem?.productId?._id;
     if (!posterId) {
       console.error("Invalid poster selected.");
+      // toast.error("Could not submit review. Invalid product.");
       return;
     }
 
     try {
       await addReview(posterId, intRating, comment, token);
+      // toast.success("Review submitted successfully!");
       setShowModal(false);
       // Optionally, refresh orders or give feedback
     } catch (err) {
       console.error("Error in rating submission", err);
+      // toast.error("Failed to submit review.");
     }
   };
 
@@ -105,7 +110,8 @@ const OrderHistory = () => {
             <EmptyBoxIcon />
             <h3 className="mt-4 text-xl font-semibold text-gray-800 dark:text-white">No Orders Yet</h3>
             <p className="mt-2 text-gray-500 dark:text-gray-400">You haven't placed any orders. Let's change that!</p>
-            <Link to="/" className="mt-6 inline-block bg-black text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+            {/* UPDATED: Added theme-aware styling to the "Start Shopping" button */}
+            <Link to="/" className="mt-6 inline-block bg-black text-white dark:bg-white dark:text-black px-6 py-2 rounded-lg font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
               Start Shopping
             </Link>
           </div>
@@ -223,9 +229,10 @@ const OrderHistory = () => {
                   >
                     Cancel
                   </button>
+                  {/* UPDATED: Added theme-aware styling to the "Submit Review" button */}
                   <button
                     onClick={submitRating}
-                    className="px-5 py-2 rounded-lg bg-black text-white hover:bg-gray-800 font-semibold text-sm"
+                    className="px-5 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 font-semibold text-sm"
                   >
                     Submit Review
                   </button>

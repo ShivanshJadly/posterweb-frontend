@@ -7,11 +7,14 @@ import bag from "../../additionalFile/shopping-bag.png";
 import userIcon from "../../additionalFile/user.png";
 import { searchPostersAPI } from "../../services/operations/posterDetailsAPI";
 import ThemeBtn from "./themeButton";
-import { ThemeProvider } from "../../context/theme";
+import useTheme from "../../context/theme";
 import iBag from "../../additionalFile/invert-bag.png";
 import iLogo from "../../additionalFile/InvLogo.png";
+import iUserIcon from "../../additionalFile/invert-user.png"; // CHANGED: Added import for inverted user icon
 import { logout } from "../../services/operations/authAPI";
 import { getCartItems } from "../../services/operations/cartAPI";
+import { motion } from "framer-motion";
+import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 
 // --- SVG Icons for UI Elements ---
 const HistoryIcon = ({ className }) => (
@@ -46,10 +49,7 @@ const Navbar = () => {
   const user = useSelector((state) => state.profile?.user);
   const [posts, setPosts] = useState([]);
   
-  // Theme state
-  const [themeMode, setThemeMode] = useState("light");
-  const lightTheme = () => setThemeMode("light");
-  const darkTheme = () => setThemeMode("dark");
+  const { themeMode, lightTheme, darkTheme } = useTheme();
 
   const fetchCartItems = async () => {
     if (!token) return;
@@ -68,15 +68,9 @@ const Navbar = () => {
   }, [token]);
 
   useEffect(() => {
-    document.querySelector("html").classList.remove("light", "dark");
-    document.querySelector("html").classList.add(themeMode);
-  }, [themeMode]);
-
-  useEffect(() => {
     const validateToken = () => {
       if (token) {
-        // In a real app, you'd decode the token to check its expiration date.
-        // For this example, we assume the token is valid if it exists.
+        // Token validation logic
       }
     };
     validateToken();
@@ -84,7 +78,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (isSearchOpen || menuOpen) return; // Don't hide navbar when overlays are open
+      if (isSearchOpen || menuOpen) return;
       const currentScrollY = window.scrollY;
       setIsVisible(!(currentScrollY > lastScrollY && currentScrollY > 100));
       setLastScrollY(currentScrollY);
@@ -126,14 +120,12 @@ const Navbar = () => {
     }
   }, [isSearchOpen]);
 
-  // Prevent body scroll when overlays are open
   useEffect(() => {
     if (menuOpen || isSearchOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
     }
-    // Cleanup function
     return () => {
       document.body.style.overflow = 'auto';
     };
@@ -165,18 +157,18 @@ const Navbar = () => {
   };
 
   return (
-    <ThemeProvider value={{ themeMode, lightTheme, darkTheme }}>
+    <>
       <div
         className={`fixed top-0 left-0 right-0 z-50 shadow-md transition-transform duration-300 
         ${isVisible ? "translate-y-0" : "-translate-y-full"} 
-        bg-white dark:bg-gray-900`}
+        ${themeMode === 'dark' ? 'bg-gray-900' : 'bg-white'}`}
       >
         <div className="flex justify-between p-3 items-center h-[5rem] text-black dark:text-white relative">
 
           {/* ====== MOBILE-ONLY LAYOUT ====== */}
           <div className="lg:hidden flex justify-between items-center w-full">
             {isSearchOpen ? (
-              <div className="absolute top-0 left-0 w-full h-full bg-white dark:bg-gray-900 flex items-center px-4 z-20 search-container">
+              <div className={`absolute top-0 left-0 w-full h-full flex items-center px-4 z-20 search-container ${themeMode === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
                 <input
                   ref={searchInputRef}
                   type="text"
@@ -202,7 +194,8 @@ const Navbar = () => {
                 <div className="flex items-center justify-end flex-1">
                   <Link to="/cart" className="relative mr-4">
                     {themeMode === "dark" ? <img src={iBag} alt="Cart" className="h-7" /> : <img src={bag} alt="Cart" className="h-7" />}
-                    {posts.length > 0 && <span className="absolute -top-1 -right-2 bg-black text-xs w-5 h-5 flex justify-center items-center animate-bounce rounded-full text-white">{posts.length}</span>}
+                    {/* CHANGED: Cart badge styling is now conditional */}
+                    {posts.length > 0 && <span className={`absolute -top-1 -right-2 text-xs w-5 h-5 flex justify-center items-center animate-bounce rounded-full ${themeMode === 'dark' ? 'bg-white text-black' : 'bg-black text-white'}`}>{posts.length}</span>}
                   </Link>
                   <button onClick={() => setMenuOpen(true)} className="flex flex-col gap-[0.26rem] focus:outline-none">
                     <span className={`w-6 border border-black dark:border-white rounded transition-transform`} />
@@ -227,12 +220,12 @@ const Navbar = () => {
             </div>
             <Link to="/cart" className="relative hover:scale-110 active:scale-90 transition-transform duration-300 transform">
               {themeMode === "dark" ? <img src={iBag} alt="Cart" className="h-7" /> : <img src={bag} alt="Cart" className="h-7" />}
-              {posts.length > 0 && <span className="absolute -top-1 -right-2 bg-black text-xs w-5 h-5 flex justify-center items-center animate-bounce rounded-full text-white">{posts.length}</span>}
+              {/* CHANGED: Cart badge styling is now conditional */}
+              {posts.length > 0 && <span className={`absolute -top-1 -right-2 text-xs w-5 h-5 flex justify-center items-center animate-bounce rounded-full ${themeMode === 'dark' ? 'bg-white text-black' : 'bg-black text-white'}`}>{posts.length}</span>}
             </Link>
             {token ? (
               <div className="relative profile-dropdown">
                 <img src={user?.image || userIcon} alt="User" className="h-10 rounded-full aspect-square object-cover hover:scale-[1.1] active:scale-90 transition-all duration-300 cursor-pointer" onClick={() => setProfileMenuOpen((prev) => !prev)} />
-                {/* --- Redesigned Profile Dropdown --- */}
                 <div className={`absolute right-0 mt-4 w-56 bg-white dark:bg-gray-800 border dark:border-gray-200 dark:border-gray-700 shadow-xl rounded-lg z-20 transition-all duration-200 ease-in-out origin-top-right ${profileMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
                   <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                     <p className="text-sm font-semibold text-black dark:text-white">Hello, {user?.fullName || 'User'}</p>
@@ -252,11 +245,18 @@ const Navbar = () => {
                   </div>
                 </div>
               </div>
-            ) : (<Link to="/login"><img src={userIcon} alt="Login" className="h-10 rounded-full aspect-square object-cover hover:scale-[1.1] active:scale-90" /></Link>)}
+              // CHANGED: Render inverted user icon in dark mode when logged out
+            ) : (<Link to="/login">
+                  {themeMode === 'dark' 
+                    ? <img src={iUserIcon} alt="Login" className="h-10 rounded-full aspect-square object-cover hover:scale-[1.1] active:scale-90" />
+                    : <img src={userIcon} alt="Login" className="h-10 rounded-full aspect-square object-cover hover:scale-[1.1] active:scale-90" />
+                  }
+                 </Link>
+            )}
           </div>
         </div>
 
-        {/* --- Search Results Dropdown (Works for both Mobile and Desktop) --- */}
+        {/* --- Search Results Dropdown --- */}
         {searchInput && searchResults.length > 0 && (
           <div className="absolute top-[5rem] left-0 right-0 px-4 lg:left-auto lg:w-96 lg:px-0 search-container">
             <div className="w-full bg-white dark:bg-gray-800 dark:text-white shadow-lg border rounded-lg z-10 max-h-96 overflow-y-auto">
@@ -273,10 +273,8 @@ const Navbar = () => {
 
       {/* --- Hamburger Menu Overlay (Mobile) --- */}
       <div className={`lg:hidden fixed inset-0 z-40 transition-opacity duration-300 ${menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        {/* Backdrop */}
         <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setMenuOpen(false)}></div>
-        {/* Menu Content */}
-        <div className={`absolute top-0 right-0 h-full w-4/5 max-w-sm bg-white dark:bg-gray-900 shadow-xl transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`absolute top-0 right-0 h-full w-4/5 max-w-sm shadow-xl transition-transform duration-300 ease-in-out flex flex-col ${menuOpen ? 'translate-x-0' : 'translate-x-full'} ${themeMode === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
           <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-black dark:text-white">Menu</h2>
             <button onClick={() => setMenuOpen(false)} className="text-2xl text-gray-500 hover:text-black dark:hover:text-white">✕</button>
@@ -295,9 +293,35 @@ const Navbar = () => {
               </>
             )}
           </nav>
+          {/* ADDED: Mobile Theme Toggle Button */}
+          <div className="mt-auto p-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+                <span className="text-lg font-semibold text-black dark:text-white">Theme</span>
+                <button
+                    onClick={() => (themeMode === "light" ? darkTheme() : lightTheme())}
+                    className={`relative w-16 h-8 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ease-in-out ${
+                        themeMode === 'light' ? 'bg-blue-500' : 'bg-gray-700'
+                    }`}
+                >
+                    <motion.div
+                        layout
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        className="absolute w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center"
+                        animate={{
+                            x: themeMode === 'dark' ? '2rem' : '0.25rem',
+                        }}
+                    >
+                        {themeMode === 'dark' 
+                            ? <MoonIcon className="w-4 h-4 text-gray-800" />
+                            : <SunIcon className="w-4 h-4 text-yellow-500" />
+                        }
+                    </motion.div>
+                </button>
+            </div>
+          </div>
         </div>
       </div>
-    </ThemeProvider>
+    </>
   );
 };
 

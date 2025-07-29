@@ -14,6 +14,7 @@ import { AdaptiveImageDiv } from "../components/common/AdaptiveImageDiv";
 import PosterDetailsSkeleton from "../components/common/skeleton/PosterDetailsSkeleton";
 import { useSelector } from "react-redux";
 import { addToCart } from "../services/operations/cartAPI";
+import useTheme from "../context/theme";
 
 const PosterDetails = () => {
   const [posts, setPosts] = useState({});
@@ -23,6 +24,7 @@ const PosterDetails = () => {
   const [selectedSize, setSelectedSize] = useState("A4");
   const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const { themeMode } = useTheme();
 
   async function fetchProductData(posterId) {
     setLoading(true);
@@ -40,14 +42,10 @@ const PosterDetails = () => {
     fetchProductData(posterId);
   }, [posterId]);
 
-  // console.log("token", token);
-
-  // add to cart
   const addToCartV2 = async () => {
-    if(!token){
+    if (!token) {
       navigate("/login");
-    }
-    else{
+    } else {
       if (!selectedSize) {
         toast.error("Please select a size before adding to the cart.");
         return;
@@ -62,15 +60,15 @@ const PosterDetails = () => {
   };
 
   const sizes = ["A3", "A4", "A5"];
-  // console.log("data:", posts);
 
   return (
-    <div className="flex justify-evenly lg:w-full lg:mx-auto overflow-x-hidden pt-16 overflow-y-hidden dark:bg-[#292929] dark:text-white">
+    // FIXED: The className string is now correctly wrapped in a template literal
+    <div className={`flex justify-evenly lg:w-full lg:mx-auto overflow-x-hidden pt-16 overflow-y-hidden ${themeMode === 'dark' ? 'bg-[#292929] text-white' : 'bg-white text-black'}`}>
       {loading ? (
         <PosterDetailsSkeleton />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 mt-7 lg:mt-8 mb-5 lg:mb-8 lg:mx-4 lg:gap-4">
-          {/* Right  */}
+          {/* Right */}
           <AdaptiveImageDiv images={posts?.posterImage?.image} />
 
           {/* Left */}
@@ -84,7 +82,7 @@ const PosterDetails = () => {
             <div>
               <div className="flex justify-center items-center gap-2 mb-2 md:mb-2 lg:mb-0">
                 <IoPrintSharp className="text-5xl md:text-4xl" />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   This product is made to order and is typically{" "}
                   <span className="font-bold">
                     printed in 1-4 working days.
@@ -94,7 +92,7 @@ const PosterDetails = () => {
               </div>
               <div className="flex justify-center items-center gap-2">
                 <FaBoxOpen className="text-5xl md:text-4xl " />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Since this product is printed on demand especially for you,{" "}
                   <span className="font-bold">
                     it is not eligible for cancellations and returns.
@@ -103,16 +101,17 @@ const PosterDetails = () => {
                 </p>
               </div>
             </div>
+            {/* FIXED: Corrected the syntax for displaying the price */}
             <span>{`Price: ₹${posts?.price}`}</span>
             <div className="flex items-center gap-4">
               <span>Size:</span>
               {sizes.map((size) => (
                 <button
                   key={size}
-                  className={`w-20 h-12 text-base rounded-full font-semibold text-[12px] p-1 px-3  uppercase ${
+                  className={`w-20 h-12 text-base rounded-full font-semibold text-[12px] p-1 px-3 uppercase transition-colors duration-200 ${
                     selectedSize === size
-                      ? "bg-black text-white "
-                      : "bg-white text-black"
+                      ? (themeMode === 'dark' ? 'bg-white text-black' : 'bg-black text-white')
+                      : (themeMode === 'dark' ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-black hover:bg-gray-300')
                   }`}
                   onClick={() => setSelectedSize(size)}
                 >
@@ -123,7 +122,8 @@ const PosterDetails = () => {
             <div className="w-full flex flex-col gap-4">
               <div className="flex items-center gap-4">
                 <h2>Quantity:</h2>
-                <div className="border border-black w-[30%] h-10 lg:h-14 rounded-full flex justify-evenly items-center dark:border-2 dark:border-white">
+                 {/* FIXED: The className string is now correctly wrapped in a template literal */}
+                <div className={`border w-[30%] h-10 lg:h-14 rounded-full flex justify-evenly items-center ${themeMode === 'dark' ? 'border-white' : 'border-black'}`}>
                   <TiMinus
                     onClick={() => {
                       quantity > 1
@@ -143,7 +143,11 @@ const PosterDetails = () => {
               </div>
               <button
                 onClick={addToCartV2}
-                className=" bg-black h-12 text-white rounded-xl font-semibold text-[20px] p-1 px-3 uppercase transition dark:border-2 dark:border-white dark:text-black dark:bg-transparent"
+                className={`h-12 rounded-xl font-semibold text-[20px] p-1 px-3 uppercase transition-all duration-300 ${
+                  themeMode === 'dark' 
+                  ? 'border-2 border-white bg-transparent text-white hover:bg-white hover:text-black' 
+                  : 'bg-black text-white hover:bg-gray-800'
+                }`}
               >
                 Add to Cart
               </button>

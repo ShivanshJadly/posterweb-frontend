@@ -9,6 +9,8 @@ import { getAddress } from "../services/operations/deliveryAPI";
 import { setSelectedDelivery, setDeliveryAddress } from "../slices/deliverySlice";
 import { motion } from "framer-motion";
 import { getCartItems } from "../services/operations/cartAPI";
+import useTheme from "../context/theme"; // ADDED: Import useTheme to get the global theme state
+import { toast } from "react-hot-toast"; // ADDED: Import toast for better notifications
 
 const CheckOut = () => {
   const { user } = useSelector((state) => state.profile);
@@ -19,6 +21,7 @@ const CheckOut = () => {
   const [showDeliveryForm, setShowDeliveryForm] = useState(false);
   const [address, setAddress] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { themeMode } = useTheme(); // ADDED: Get the current theme mode
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -42,14 +45,12 @@ const CheckOut = () => {
 
   useEffect(() => {
     const total = posts.reduce(
-      // Calculate total amount from cart items
       (sum, item) => sum + item.poster?.price * item.quantity,
       0
     );
     setTotalAmount(total);
   }, [posts]);
 
-  //Fetch and set delivery address
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
@@ -68,54 +69,55 @@ const CheckOut = () => {
   }, [token, dispatch]);
 
   const handlePayment = async () => {
-  if (!selectedDelivery) {
-    alert("Please select a delivery address before proceeding.");
-    return;
-  }
+    if (!selectedDelivery) {
+      toast.error("Please select a delivery address before proceeding."); // REPLACED: alert with toast
+      return;
+    }
 
-  const deliveryObj = address.find((addr) => addr._id === selectedDelivery);
-  if (!deliveryObj) {
-    alert("Selected delivery address is not valid.");
-    return;
-  }
+    const deliveryObj = address.find((addr) => addr._id === selectedDelivery);
+    if (!deliveryObj) {
+      toast.error("Selected delivery address is not valid."); // REPLACED: alert with toast
+      return;
+    }
 
-  const posterDetails = posts.map((item) => ({
-    posterId: item.poster?._id,
-    quantity: item.quantity,
-    size: item?.size,
-  }));
+    const posterDetails = posts.map((item) => ({
+      posterId: item.poster?._id,
+      quantity: item.quantity,
+      size: item?.size,
+    }));
 
-  const userDetails = {
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
+    const userDetails = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+    };
+
+    const paymentMethod = "Online";
+
+    try {
+      await BuyPoster(
+        token,
+        totalAmount,
+        posterDetails,
+        userDetails,
+        deliveryObj,
+        paymentMethod,
+        navigate,
+        dispatch
+      );
+    } catch (error) {
+      console.error("Error during payment:", error);
+      toast.error("Payment failed. Please try again."); // REPLACED: alert with toast
+    }
   };
 
-  const paymentMethod = "Online";
-
-  try {
-    await BuyPoster(
-      token,               
-      totalAmount,     
-      posterDetails,     
-      userDetails,         
-      deliveryObj,          
-      paymentMethod,       
-      navigate,             
-      dispatch              
-    );
-  } catch (error) {
-    console.error("Error during payment:", error);
-    alert("Payment failed. Please try again.");
-  }
-};
-
   return (
+    // UPDATED: Main container now has theme-aware background
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
-      className="flex justify-center pt-24"
+      className="flex justify-center pt-24 min-h-screen bg-white dark:bg-black"
     >
       <div className="flex flex-col lg:flex-row w-[80%] overflow-hidden">
         {/* Delivery Section */}
@@ -127,7 +129,8 @@ const CheckOut = () => {
         >
           {!showDeliveryForm ? (
             <div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              {/* UPDATED: Heading is now theme-aware */}
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
                 Select Delivery Address
               </h2>
               <form className="space-y-4">
@@ -137,10 +140,11 @@ const CheckOut = () => {
                     return (
                       <label
                         key={addr._id}
+                        // UPDATED: Address selection label is now theme-aware for both selected and unselected states
                         className={`flex items-start space-x-2 p-3 border rounded-lg cursor-pointer transition ${
                           isSelected
-                            ? "border-black bg-gray-100 shadow-md"
-                            : "hover:shadow"
+                            ? "border-black bg-gray-100 shadow-md dark:border-white dark:bg-gray-700"
+                            : "border-gray-300 dark:border-gray-600 hover:shadow"
                         }`}
                       >
                         <input
@@ -154,11 +158,12 @@ const CheckOut = () => {
                           className="mt-1"
                         />
                         <div>
-                          <p className="font-medium">{addr.addressLine1}</p>
-                          <p className="text-sm text-gray-600">
+                          {/* UPDATED: Address text is now theme-aware */}
+                          <p className="font-medium text-black dark:text-white">{addr.addressLine1}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             {`${addr.city}, ${addr.state}, ${addr.pincode}`}
                           </p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Phone: {addr.phoneNumber}
                           </p>
                           {addr.isDefault && (
@@ -171,22 +176,24 @@ const CheckOut = () => {
                     );
                   })
                 ) : (
-                  <p>No delivery addresses found. Please add one.</p>
+                  <p className="text-gray-500 dark:text-gray-400">No delivery addresses found. Please add one.</p>
                 )}
               </form>
 
+              {/* UPDATED: "Add Delivery Details" button is now theme-aware */}
               <button
                 onClick={() => setShowDeliveryForm(true)}
-                className="mt-6 w-full bg-black text-white font-medium text-lg py-3 rounded-lg transition duration-200"
+                className="mt-6 w-full bg-black text-white dark:bg-white dark:text-black font-medium text-lg py-3 rounded-lg transition duration-200"
               >
                 Add Delivery Details
               </button>
             </div>
           ) : (
             <div>
+              {/* UPDATED: "Back" button is now theme-aware */}
               <button
                 onClick={() => setShowDeliveryForm(false)}
-                className="mb-4 flex items-center text-gray-600 hover:text-black transition duration-200"
+                className="mb-4 flex items-center text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition duration-200"
               >
                 <FaArrowLeft />
                 <span className="ml-2">Back</span>
@@ -203,7 +210,8 @@ const CheckOut = () => {
           transition={{ duration: 0.6, ease: "easeInOut" }}
           className="lg:w-1/2 w-full p-4 lg:p-8 flex flex-col"
         >
-          <h2 className="text-2xl text-gray-800">Order Summary</h2>
+          {/* UPDATED: Heading is now theme-aware */}
+          <h2 className="text-2xl text-gray-800 dark:text-white">Order Summary</h2>
           <div className="space-y-2">
             <div className="pr-2">
               {posts.map((item, index) => (
@@ -222,26 +230,30 @@ const CheckOut = () => {
                 />
               ))}
             </div>
-            <div className="flex justify-between ml-2 text-md text-gray-600">
+            {/* UPDATED: Summary text is now theme-aware */}
+            <div className="flex justify-between ml-2 text-md text-gray-600 dark:text-gray-400">
               <span>Total Items:</span>
               <span>
                 {posts.reduce((total, item) => total + item.quantity, 0)}
               </span>
             </div>
-            <div className="flex justify-between text-md text-gray-600 ml-2">
+            <div className="flex justify-between text-md text-gray-600 dark:text-gray-400 ml-2">
               <span>Shipment:</span>
               <span>Free</span>
             </div>
-            <div className="flex justify-between text-xl font-bold text-gray-800 ml-2">
+            {/* UPDATED: Total price text is now theme-aware */}
+            <div className="flex justify-between text-xl font-bold text-gray-800 dark:text-white ml-2">
               <span>Total:</span>
               <span>₹{totalAmount}</span>
             </div>
-            <p className="text-gray-600 text-[0.8rem] ml-2">
+            {/* UPDATED: Shipment info text is now theme-aware */}
+            <p className="text-gray-600 dark:text-gray-400 text-[0.8rem] ml-2">
               The shipment is expected to be delivered within 3 to 4 business days.
             </p>
+            {/* UPDATED: "PAY NOW" button is now theme-aware */}
             <button
               onClick={handlePayment}
-              className="w-full bg-black text-white font-medium text-lg py-3 rounded-lg transition duration-200 ml-2"
+              className="w-full bg-black text-white dark:bg-white dark:text-black font-medium text-lg py-3 rounded-lg transition duration-200 ml-2"
             >
               PAY NOW
             </button>

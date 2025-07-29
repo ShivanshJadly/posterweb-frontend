@@ -2,14 +2,16 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import CartItem from "../components/CartItem";
 import { useEffect, useState } from "react";
-import emptyBox from "../additionalFile/empty-box.png";
+import emptyBox from "../additionalFile/emptybox.png";
 import spider from "../additionalFile/spider.png";
+import redSpider from "../additionalFile/redSpider.png";
 import Product from "../components/Product";
 import { getPoster } from "../services/operations/posterDetailsAPI";
 import HomeSkeleton from "../components/common/skeleton/HomeSkeleton";
 import { motion } from "framer-motion";
 import { getCartItems } from "../services/operations/cartAPI";
 import Spinner from "../components/Spinner";
+import useTheme from "../context/theme";
 
 const Cart = () => {
   const [totalAmount, setTotalAmount] = useState(0);
@@ -18,18 +20,15 @@ const Cart = () => {
   const [posts, setPosts] = useState([]);
   const [allPosters, setAllPosters] = useState([]);
   const { token } = useSelector((state) => state.auth);
+  const { themeMode } = useTheme();
 
   const fetchCartItems = async () => {
-    // --- BUG FIX ---
-    // If the user is not logged in, there's no need to show a loading screen.
-    // Immediately set loading to false and ensure the cart is empty.
     if (!token) {
       setPosts([]);
       setPageLoading(false);
       setLoading(false);
       return;
     }
-    // --- END FIX ---
 
     setLoading(true);
     try {
@@ -88,7 +87,7 @@ const Cart = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1.3 }}
-      className="w-11/12 mx-auto pt-24"
+      className="w-full mx-auto pt-24 text-black dark:text-white bg-white dark:bg-black"
     >
       {posts.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -114,23 +113,23 @@ const Cart = () => {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="bg-white shadow-md p-4 lg:p-6 rounded-lg border w-full"
+            className="bg-gray-50 dark:bg-gray-800 shadow-md p-4 lg:p-6 rounded-lg border dark:border-gray-700 w-full h-fit"
           >
             <h1 className="text-2xl lg:text-3xl font-bold mb-4">Summary</h1>
-            <p className="text-gray-700 font-medium text-sm lg:text-base">
+            <p className="text-gray-700 dark:text-gray-300 font-medium text-sm lg:text-base">
               Items:{" "}
-              <span className="font-bold text-black">
+              <span className="font-bold text-black dark:text-white">
                 {posts.reduce((sum, item) => sum + item.quantity, 0)}
               </span>
             </p>
-            <p className="text-gray-700 font-medium text-sm lg:text-base mt-2">
+            <p className="text-gray-700 dark:text-gray-300 font-medium text-sm lg:text-base mt-2">
               Total:{" "}
-              <span className="font-bold text-black">
+              <span className="font-bold text-black dark:text-white">
                 ₹{totalAmount.toFixed(2)}
               </span>
             </p>
             <Link to="/checkout">
-              <button className="bg-black text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-semibold w-full mt-4 hover:scale-105 transition-transform duration-300 text-sm lg:text-base">
+              <button className="bg-black dark:bg-yellow-500 dark:text-black text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-semibold w-full mt-4 hover:scale-105 transition-transform duration-300 text-sm lg:text-base">
                 Check Out
               </button>
             </Link>
@@ -167,15 +166,16 @@ const Cart = () => {
               </div>
               <Link
                 to="/allposters"
-                className="relative group text-black mb-4 text-sm lg:text-base"
+                className="relative group text-black dark:text-white mb-4 text-sm lg:text-base"
               >
                 View More
-                <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-black transition-all duration-300 transform -translate-x-1/2 group-hover:w-full"></span>
+                <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-black dark:bg-white transition-all duration-300 transform -translate-x-1/2 group-hover:w-full"></span>
               </Link>
             </div>
           </motion.div>
         </div>
       ) : (
+        // ✅ **FIX APPLIED HERE**: Added `relative` class to the container
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -185,15 +185,19 @@ const Cart = () => {
           <img
             src={emptyBox}
             alt="empty-box"
-            className="w-30 sm:w-40 lg:w-50 mix-blend-darken"
+            className={`w-30 sm:w-40 lg:w-50 ${
+              themeMode === "light" ? "mix-blend-darken" : ""
+            }`}
           />
+
           <img
-            src={spider}
+            src={themeMode === 'light' ? spider : redSpider}
             alt="spider"
             className="w-[100px] md:w-[130px] lg:w-[150px] right-5 absolute opacity-40"
-            style={{ top: "3.5rem" }}
+            style={{ top: "3.9rem" }}
           />
-          <h1 className="font-semibold text-gray-700 m-4 text-sm lg:text-base">
+
+          <h1 className="font-semibold text-gray-700 dark:text-gray-400 m-4 text-sm lg:text-base">
             NO ITEM IN THE BAG
           </h1>
         </motion.div>
