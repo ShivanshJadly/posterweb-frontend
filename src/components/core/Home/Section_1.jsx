@@ -1,6 +1,5 @@
 import React from 'react';
 
-// npm i swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -35,11 +34,9 @@ const Section_1 = () => {
         {slides.map((slide, index) => (
           <SwiperSlide key={index}>
             <div className="relative w-full flex justify-center items-center">
-              {/* Heading overlay */}
               <div className="absolute lg:bottom-32 bg-black bg-opacity-50 text-white p-4 rounded-lg">
                 <h2 className="lg:text-6xl font-bold">{slide.heading}</h2>
               </div>
-              {/* Image */}
               <img
                 src={slide.image}
                 alt={`Carousel slide ${index + 1}`}

@@ -1,4 +1,4 @@
-// src/context/theme.js
+
 
 import { createContext, useContext, useState, useEffect } from "react";
 
@@ -9,7 +9,6 @@ const ThemeContext = createContext({
 });
 
 export const ThemeProvider = ({ children }) => {
-    // ✅ Initialize state from localStorage or default to "light"
     const [themeMode, setThemeMode] = useState(() => {
         return localStorage.getItem("theme") || "light";
     });
@@ -27,7 +26,6 @@ export const ThemeProvider = ({ children }) => {
         htmlElement.classList.remove("light", "dark");
         htmlElement.classList.add(themeMode);
         
-        // ✅ Save the current theme to localStorage whenever it changes
         localStorage.setItem("theme", themeMode);
     }, [themeMode]);
 

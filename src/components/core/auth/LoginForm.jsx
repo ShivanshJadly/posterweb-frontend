@@ -7,7 +7,6 @@ import "../../../font/font.css";
 
 import { login } from "../../../services/operations/authAPI";
 
-// Receive isLoading prop
 function LoginForm({ isLoading }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -36,14 +35,12 @@ function LoginForm({ isLoading }) {
     }
 
     try {
-      // Dispatch action and let Redux handle loading state
       const response = await dispatch(login(email, password, navigate));
       if (response && response.error) {
         toast.error("Incorrect email or password!");
       }
     } catch (error) {
-      // Error handling is often managed by the authAPI service itself,
-      // but you can add more specific client-side toasts if needed.
+
     }
   };
 
@@ -61,7 +58,7 @@ function LoginForm({ isLoading }) {
           onChange={handleOnChange}
           placeholder="Enter email"
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-700 focus:border-gray-700 outline-none transition-all duration-200 shadow-sm bg-gray-100 text-gray-800"
-          disabled={isLoading} // Disable input when loading
+          disabled={isLoading}
         />
       </label>
       <label className="relative w-full">
@@ -76,11 +73,11 @@ function LoginForm({ isLoading }) {
           onChange={handleOnChange}
           placeholder="Enter Password"
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-700 focus:border-gray-700 outline-none transition-all duration-200 shadow-sm bg-gray-100 text-gray-800"
-          disabled={isLoading} // Disable input when loading
+          disabled={isLoading}
         />
         {password && (
           <span
-            onClick={() => !isLoading && setShowPassword((prev) => !prev)} // Disable click when loading
+            onClick={() => !isLoading && setShowPassword((prev) => !prev)}
             className={`absolute right-3 top-[38px] z-[10] cursor-pointer text-gray-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:text-gray-700'}`}
           >
             {showPassword ? (
@@ -104,7 +101,7 @@ function LoginForm({ isLoading }) {
         <button
           type="submit"
           className="rounded-md bg-gray-800 text-white py-2.5 px-6 font-semibold shadow-md hover:bg-gray-900 transition-all duration-300 transform hover:scale-105"
-          disabled={isLoading} // Disable button when loading
+          disabled={isLoading}
         >
           LOGIN
         </button>

@@ -6,17 +6,15 @@ import InfiniteLoop from "../components/core/Home/InfiniteLoop";
 import HomeSkeleton from "../components/common/skeleton/HomeSkeleton";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-// Removed unused ThemeProvider and FixedSizeGrid imports
+
 
 const Home = () => {
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState([]);
   const navigate = useNavigate();
 
-  // We only need to show the first 8 posts on the home page.
   const visiblePosts = posts.slice(0, 8);
 
-  // Fetches all poster data when the component mounts.
   async function fetchProductData() {
     setLoading(true);
     try {
@@ -37,8 +35,7 @@ const Home = () => {
     navigate("/allposters");
   };
 
-  // The local theme state and useEffect have been removed.
-  // The component now relies on the global theme context.
+
 
   return (
     <motion.div
@@ -48,7 +45,6 @@ const Home = () => {
       transition={{ duration: 1.3 }}
       className="relative overflow-hidden text-black dark:bg-black dark:text-white"
     >
-      {/* Section 1 */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

@@ -10,13 +10,13 @@ import ThemeBtn from "./themeButton";
 import useTheme from "../../context/theme";
 import iBag from "../../additionalFile/invert-bag.png";
 import iLogo from "../../additionalFile/InvLogo.png";
-import iUserIcon from "../../additionalFile/invert-user.png"; // CHANGED: Added import for inverted user icon
+import iUserIcon from "../../additionalFile/invert-user.png";
 import { logout } from "../../services/operations/authAPI";
 import { getCartItems } from "../../services/operations/cartAPI";
 import { motion } from "framer-motion";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 
-// --- SVG Icons for UI Elements ---
+
 const HistoryIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
 );
@@ -30,21 +30,21 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // State for general component functionality
+
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [bgColor, setBgColor] = useState("rgba(66, 165, 245, 0.9)");
 
-  // State for search functionality
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const searchInputRef = useRef(null);
 
-  // Redux and local state
+
   const token = useSelector((state) => state.auth?.token);
   const user = useSelector((state) => state.profile?.user);
   const [posts, setPosts] = useState([]);
@@ -70,7 +70,7 @@ const Navbar = () => {
   useEffect(() => {
     const validateToken = () => {
       if (token) {
-        // Token validation logic
+
       }
     };
     validateToken();
@@ -165,7 +165,7 @@ const Navbar = () => {
       >
         <div className="flex justify-between p-3 items-center h-[5rem] text-black dark:text-white relative">
 
-          {/* ====== MOBILE-ONLY LAYOUT ====== */}
+  
           <div className="lg:hidden flex justify-between items-center w-full">
             {isSearchOpen ? (
               <div className={`absolute top-0 left-0 w-full h-full flex items-center px-4 z-20 search-container ${themeMode === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
@@ -194,7 +194,6 @@ const Navbar = () => {
                 <div className="flex items-center justify-end flex-1">
                   <Link to="/cart" className="relative mr-4">
                     {themeMode === "dark" ? <img src={iBag} alt="Cart" className="h-7" /> : <img src={bag} alt="Cart" className="h-7" />}
-                    {/* CHANGED: Cart badge styling is now conditional */}
                     {posts.length > 0 && <span className={`absolute -top-1 -right-2 text-xs w-5 h-5 flex justify-center items-center animate-bounce rounded-full ${themeMode === 'dark' ? 'bg-white text-black' : 'bg-black text-white'}`}>{posts.length}</span>}
                   </Link>
                   <button onClick={() => setMenuOpen(true)} className="flex flex-col gap-[0.26rem] focus:outline-none">
@@ -206,7 +205,7 @@ const Navbar = () => {
               </>
             )}
           </div>
-          {/* ====== DESKTOP-ONLY LAYOUT ====== */}
+
           <NavLink to="/" className="hidden lg:block">{themeMode === "light" ? <img src={logo} className="h-20 mr-2 mix-blend-darken" alt="Logo" /> : <img src={iLogo} className="h-20 mr-2" alt="Logo" />}</NavLink>
           <div className="hidden lg:flex items-center font-medium gap-4">
             <ThemeBtn />
@@ -220,7 +219,6 @@ const Navbar = () => {
             </div>
             <Link to="/cart" className="relative hover:scale-110 active:scale-90 transition-transform duration-300 transform">
               {themeMode === "dark" ? <img src={iBag} alt="Cart" className="h-7" /> : <img src={bag} alt="Cart" className="h-7" />}
-              {/* CHANGED: Cart badge styling is now conditional */}
               {posts.length > 0 && <span className={`absolute -top-1 -right-2 text-xs w-5 h-5 flex justify-center items-center animate-bounce rounded-full ${themeMode === 'dark' ? 'bg-white text-black' : 'bg-black text-white'}`}>{posts.length}</span>}
             </Link>
             {token ? (
@@ -245,7 +243,6 @@ const Navbar = () => {
                   </div>
                 </div>
               </div>
-              // CHANGED: Render inverted user icon in dark mode when logged out
             ) : (<Link to="/login">
                   {themeMode === 'dark' 
                     ? <img src={iUserIcon} alt="Login" className="h-10 rounded-full aspect-square object-cover hover:scale-[1.1] active:scale-90" />
@@ -256,7 +253,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* --- Search Results Dropdown --- */}
+
         {searchInput && searchResults.length > 0 && (
           <div className="absolute top-[5rem] left-0 right-0 px-4 lg:left-auto lg:w-96 lg:px-0 search-container">
             <div className="w-full bg-white dark:bg-gray-800 dark:text-white shadow-lg border rounded-lg z-10 max-h-96 overflow-y-auto">
@@ -271,7 +268,7 @@ const Navbar = () => {
         )}
       </div>
 
-      {/* --- Hamburger Menu Overlay (Mobile) --- */}
+
       <div className={`lg:hidden fixed inset-0 z-40 transition-opacity duration-300 ${menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setMenuOpen(false)}></div>
         <div className={`absolute top-0 right-0 h-full w-4/5 max-w-sm shadow-xl transition-transform duration-300 ease-in-out flex flex-col ${menuOpen ? 'translate-x-0' : 'translate-x-full'} ${themeMode === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
@@ -293,7 +290,6 @@ const Navbar = () => {
               </>
             )}
           </nav>
-          {/* ADDED: Mobile Theme Toggle Button */}
           <div className="mt-auto p-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold text-black dark:text-white">Theme</span>
