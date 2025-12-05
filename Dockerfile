@@ -16,7 +16,7 @@ RUN npm config set fetch-retries 8 \
 # RUN apk add --no-cache python3 make g++ libc6-compat
 
 # install dependencies (keeps your workflow with npm ci)
-RUN npm ci --unsafe-perm --verbose
+RUN npm ci --unsafe-perm
 
 COPY . .
 RUN npm run build
