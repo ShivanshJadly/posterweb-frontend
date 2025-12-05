@@ -11,14 +11,21 @@ pipeline {
     }
     stage('Build & Docker') {
       steps {
-        sh """
-          docker --version
-          docker compose version || true
-          # build image and run compose
-          docker compose pull || true
-          docker compose build --no-cache
-          docker compose up -d --remove-orphans
-        """
+        script {
+          retry(3) {
+            sh '''
+              set -o pipefail
+              export DOCKER_BUILDKIT=1
+              docker --version
+              docker compose version || true
+              # pull images if available
+              docker compose pull || true
+              # build — do NOT use --no-cache so dependency layer is cached
+              DOCKER_BUILDKIT=1 docker compose build --progress=plain
+              docker compose up -d --remove-orphans
+            '''
+          }
+        }
       }
     }
   }
